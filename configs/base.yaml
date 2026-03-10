@@ -1,0 +1,33 @@
+# Robust Trinity — Base Configuration
+# Project: Structural Fault Tolerance in Heterogeneous Financial AI Systems
+
+project:
+  name: "robust-trinity"
+  version: "0.1.0"
+
+seed: 42
+
+paths:
+  data_raw: "data/raw"
+  data_processed: "data/processed"
+  data_abides: "data/abides"
+  experiments: "experiments"
+
+data:
+  ticker: "AAPL"
+  train_start: "2023-01-01"
+  train_end: "2024-06-30"
+  test_start: "2024-07-01"
+  test_end: "2024-12-31"
+  lookback_window: 30
+
+wandb:
+  project: "robust-trinity"
+  entity: null  # set in .env or override
+
+action_space:
+  # Position-target action space
+  # 0 = flat (no position), 1 = long, 2 = short
+  flat: 0
+  long: 1
+  short: 2

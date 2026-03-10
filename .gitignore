@@ -1,0 +1,45 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+dist/
+build/
+*.egg
+
+# Environment
+.env
+.venv/
+venv/
+env/
+
+# Data and experiments (large files)
+data/raw/
+data/processed/
+data/abides/
+experiments/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# W&B
+wandb/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Model files
+*.zip
+*.pkl
+*.pt
+*.pth
+
+# ABIDES (installed as local editable, tracked separately)
+abides/
