@@ -40,23 +40,17 @@ class TestSeedReproducibility:
         assert not np.array_equal(a1, a2)
 
 
-class TestDataStubs:
-    """Verify data loading stubs raise NotImplementedError."""
+class TestDataLoading:
+    """Verify data loading functions work with real data."""
 
-    def test_load_numeric_features_not_implemented(self):
+    def test_load_numeric_features(self):
         from src.utils.data import load_numeric_features
 
-        try:
-            load_numeric_features()
-            assert False, "Should have raised NotImplementedError"
-        except NotImplementedError:
-            pass
+        df = load_numeric_features()
+        assert len(df) > 200
 
-    def test_load_headlines_not_implemented(self):
+    def test_load_headlines(self):
         from src.utils.data import load_headlines
 
-        try:
-            load_headlines()
-            assert False, "Should have raised NotImplementedError"
-        except NotImplementedError:
-            pass
+        headlines = load_headlines()
+        assert len(headlines) > 400

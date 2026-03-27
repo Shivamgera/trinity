@@ -45,6 +45,10 @@ wandb/
 # ABIDES (installed as local editable, tracked separately)
 abides/
 
+# SLURM
+slurm/.env
+slurm/logs/
+
 # Testing / coverage
 htmlcov/
 .tox/

@@ -13,11 +13,22 @@ from pathlib import Path
 from typing import Any
 
 import pandas as pd
+import yaml
+
+from src.utils.features import FEATURE_NAMES
 
 # Project paths
 PROJECT_ROOT = Path(__file__).parent.parent.parent
 DATA_RAW = PROJECT_ROOT / "data" / "raw"
 DATA_PROCESSED = PROJECT_ROOT / "data" / "processed"
+CONFIGS = PROJECT_ROOT / "configs"
+
+
+def _load_splits() -> dict:
+    """Load train/test split date ranges from config."""
+    splits_path = CONFIGS / "data_splits.yaml"
+    with open(splits_path) as f:
+        return yaml.safe_load(f)
 
 
 def load_numeric_features(
@@ -27,13 +38,47 @@ def load_numeric_features(
     """Load z-normalized numeric features for the Executor agent.
 
     Args:
-        ticker: Stock ticker symbol.
-        split: One of "train", "val", "test".
+        ticker: Stock ticker symbol (currently only 'AAPL' supported).
+        split: One of "train", "test", "warmup", or "all".
 
     Returns:
-        DataFrame with DatetimeIndex and ~15 numeric feature columns.
+        DataFrame with DatetimeIndex and 14 numeric feature columns,
+        all z-score normalized.
     """
-    raise NotImplementedError("Will be implemented in Phase 1 (P1-T1)")
+    parquet_path = DATA_PROCESSED / f"{ticker.lower()}_features.parquet"
+    if not parquet_path.exists():
+        raise FileNotFoundError(
+            f"Feature file not found: {parquet_path}. "
+            "Run scripts/download_data.py first."
+        )
+
+    df = pd.read_parquet(parquet_path)
+
+    if split == "all":
+        return df
+
+    splits = _load_splits()
+    if split not in splits:
+        raise ValueError(f"Unknown split '{split}'. Available: {list(splits.keys())}")
+
+    date_range = splits[split]
+    mask = (df.index >= date_range["start"]) & (df.index <= date_range["end"])
+    return df.loc[mask]
+
+
+def load_raw_ohlcv(ticker: str = "AAPL") -> pd.DataFrame:
+    """Load raw OHLCV data for a ticker.
+
+    Args:
+        ticker: Stock ticker symbol.
+
+    Returns:
+        DataFrame with OHLCV columns and DatetimeIndex.
+    """
+    path = DATA_RAW / f"{ticker.lower()}_ohlcv.parquet"
+    if not path.exists():
+        raise FileNotFoundError(f"Raw OHLCV not found: {path}")
+    return pd.read_parquet(path)
 
 
 def load_headlines(
@@ -45,22 +90,43 @@ def load_headlines(
 
     Args:
         ticker: Stock ticker symbol.
-        start_date: ISO format start date (inclusive).
-        end_date: ISO format end date (inclusive).
+        start_date: ISO format start date (inclusive). None = no lower bound.
+        end_date: ISO format end date (inclusive). None = no upper bound.
 
     Returns:
         List of dicts with keys: date, ticker, headline, source.
     """
-    raise NotImplementedError("Will be implemented in Phase 1 (P1-T2)")
+    import json
+
+    headlines_path = DATA_PROCESSED / "headlines.json"
+    if not headlines_path.exists():
+        raise FileNotFoundError(
+            f"Headlines file not found: {headlines_path}. "
+            "Run scripts/download_headlines.py first."
+        )
+
+    with open(headlines_path) as f:
+        headlines = json.load(f)
+
+    # Filter by ticker
+    headlines = [h for h in headlines if h["ticker"] == ticker]
+
+    # Filter by date range
+    if start_date:
+        headlines = [h for h in headlines if h["date"] >= start_date]
+    if end_date:
+        headlines = [h for h in headlines if h["date"] <= end_date]
+
+    return headlines
 
 
 def get_feature_names() -> list[str]:
     """Return the ordered list of numeric feature column names.
 
     Returns:
-        List of feature name strings matching columns in load_numeric_features().
+        List of 14 feature name strings matching columns in load_numeric_features().
     """
-    raise NotImplementedError("Will be implemented in Phase 1 (P1-T1)")
+    return list(FEATURE_NAMES)
 
 
 def verify_channel_independence(features_df: pd.DataFrame) -> None:
