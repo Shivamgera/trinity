@@ -157,3 +157,26 @@ P7-T3 ──→ P8-T1 ──→ P8-T2 ──→ P8-T3 ──→ P8-T4 ──→ 
 2. **Analyst-only** — LLM signals executed directly, no RL
 3. **Trinity-no-CGate** — Simple agreement check: if argmax(π_RL)==d_LLM, full conviction; else execute argmax(π_RL) at 50% position size. No Δ threshold logic.
 4. **Fused LLM-RL** — Intentionally breaks channel independence (ablation)
+
+---
+
+## Key Figure: MaxDD vs Corruption Rate
+
+One plot will make the adversarial robustness claim extremely convincing. Plot MaxDD (y-axis) against corruption rate (x-axis) for all four configurations, for both attack vectors (two subplots or two separate figures).
+
+```
+MaxDD
+12% |         Analyst
+11% | Executor
+10% |
+ 9% |      Trinity-no-CGate
+ 8% | Trinity
+ 7% |
+ 6% |
+     0   10   20   30   40   50
+           corruption %
+```
+
+The Trinity line should be approximately flat, which visually proves robustness — MaxDD barely moves regardless of how much the adversary corrupts the input channels. The single-channel baselines (Analyst-Only under signal poisoning, Executor-Only under observation perturbation) should show clear degradation, while the immune baselines remain constant horizontal lines.
+
+This is the single most impactful figure in the thesis. Reviewers love a flat line that proves an invariance property.

@@ -625,15 +625,15 @@ For this task, we need two types of text data:
 
 1. **FinancialPhraseBank** (Malo et al. 2014): A standard dataset of 4,845 financial sentences with sentiment labels (positive/negative/neutral). This is used to VALIDATE the Analyst's sentiment understanding, not to train it (the LLM is pre-trained).
 
-2. **Headline dataset aligned with AAPL price data**: For each trading day in our date range (Jan 2022 – Dec 2024), we need at least one headline that the Analyst can process during simulation. Sources:
-   - Alpha Vantage News API (free tier, limited to ~25 requests/day)
-   - If API access is limited, create a curated representative dataset
+2. **Real headline dataset aligned with AAPL price data**: For each trading day in our date range (Jan 2022 – Dec 2024), we need at least one real financial news headline that the Analyst can process during simulation. We use the **Polygon.io REST API** (free "Basic" tier) to fetch historical AAPL-tagged news articles. The API returns real headlines from publishers like Benzinga, Investing.com, MarketWatch, and others — complete with ticker tags and publication timestamps.
+
+**Why real headlines are mandatory.** An earlier draft of this task used templated/curated headlines selected based on the day's actual return (e.g., bullish template on +1% days). This creates **data leakage**: the headline perfectly encodes the day's price direction, giving the Analyst an unfair information advantage that would not exist in production. Real headlines avoid this problem — they reflect journalist judgment and publicly available information at the time of publication, not future price movements.
 
 The project root is `/Users/shivamgera/projects/research1`.
 
 ### Objective
 
-Download FinancialPhraseBank, source or create a headline dataset aligned with AAPL trading dates, store both in the correct locations, and verify data quality.
+Download FinancialPhraseBank, fetch real AAPL-tagged headlines from Polygon.io aligned with trading dates, store both in the correct locations, and verify data quality.
 
 ### Detailed Instructions
 
@@ -681,231 +681,234 @@ print(f"Saved {len(data)} sentences to {output_path}")
 
 If the `datasets` library is not already in `pyproject.toml`, add it temporarily or download manually. The key thing is to get a CSV with columns `sentence, label` where label ∈ {positive, negative, neutral}.
 
-**Step 2: Source headline data for AAPL**
+**Step 2: Fetch real AAPL headlines from Polygon.io**
+
+Prerequisites:
+- Sign up for a free Polygon.io account at https://polygon.io (the "Basic" tier is free, no credit card required).
+- Copy your API key and add it to `.env` as `POLYGON_API_KEY=pk_...`.
+- The free tier allows 5 API requests per minute. The script respects this with a 12-second sleep between paginated requests.
 
 Create `scripts/download_headlines.py`:
 
 ```python
-"""Source and prepare AAPL-aligned headline dataset.
+"""Fetch real AAPL-tagged headlines from Polygon.io REST API.
 
-Strategy:
-1. Try Alpha Vantage News API (free tier)
-2. If API is limited, generate a curated representative dataset
-   aligned with actual AAPL market moves.
+Uses the /v2/reference/news endpoint with ticker=AAPL to retrieve
+historical news articles. Paginates through the full date range
+(Jan 2022 – Dec 2024), deduplicates to one headline per trading day,
+and saves as JSON.
+
+API docs: https://polygon.io/docs/rest/stocks/news
+Free tier: 5 requests/minute, no daily cap, historical access.
 """
 
 import json
 import os
-from datetime import datetime, timedelta
+import sys
+import time
 from pathlib import Path
 
 import pandas as pd
-import numpy as np
+import requests
+from dotenv import load_dotenv
 
-from src.utils.seed import set_global_seed
-
-set_global_seed(42)
+load_dotenv()
 
 project_root = Path(__file__).parent.parent
 output_path = project_root / "data" / "processed" / "headlines.json"
 output_path.parent.mkdir(parents=True, exist_ok=True)
 
+# Polygon.io configuration
+BASE_URL = "https://api.polygon.io/v2/reference/news"
+TICKER = "AAPL"
+DATE_START = "2022-01-01"  # warmup period start
+DATE_END = "2024-12-31"    # test period end
+PAGE_LIMIT = 1000          # max allowed per request
+RATE_LIMIT_SLEEP = 12.5    # seconds between requests (5 req/min = 12s)
 
-def try_alpha_vantage(ticker: str, api_key: str) -> list[dict] | None:
-    """Try fetching headlines from Alpha Vantage News API.
 
-    Free tier is very limited (25 requests/day, 50 articles/request).
-    Returns None if API key is missing or request fails.
+def fetch_all_articles(api_key: str) -> list[dict]:
+    """Fetch all AAPL-tagged articles from Polygon.io, paginating via next_url.
+
+    Returns raw article dicts from the API with keys like 'title',
+    'published_utc', 'publisher', 'tickers', etc.
     """
-    import requests
-
-    if not api_key:
-        return None
-
-    url = "https://www.alphavantage.co/query"
+    articles: list[dict] = []
+    url = BASE_URL
     params = {
-        "function": "NEWS_SENTIMENT",
-        "tickers": ticker,
-        "apikey": api_key,
-        "limit": 50,
+        "ticker": TICKER,
+        "published_utc.gte": f"{DATE_START}T00:00:00Z",
+        "published_utc.lte": f"{DATE_END}T23:59:59Z",
+        "limit": PAGE_LIMIT,
+        "sort": "published_utc",
+        "order": "asc",
+        "apiKey": api_key,
     }
 
-    try:
-        resp = requests.get(url, params=params, timeout=30)
-        resp.raise_for_status()
-        data = resp.json()
+    page = 0
+    while url:
+        page += 1
+        try:
+            resp = requests.get(url, params=params, timeout=30)
+            resp.raise_for_status()
+            data = resp.json()
+        except requests.RequestException as e:
+            print(f"  Request failed on page {page}: {e}")
+            break
 
-        if "feed" not in data:
-            print(f"Alpha Vantage response unexpected: {list(data.keys())}")
-            return None
+        results = data.get("results", [])
+        if not results:
+            break
 
-        headlines = []
-        for article in data["feed"]:
-            # Parse the date (format: "20240101T120000")
-            date_str = article.get("time_published", "")[:8]
-            try:
-                date = datetime.strptime(date_str, "%Y%m%d").strftime("%Y-%m-%d")
-            except ValueError:
-                continue
+        articles.extend(results)
+        print(f"  Page {page}: fetched {len(results)} articles "
+              f"(total: {len(articles)})")
 
-            headlines.append({
-                "date": date,
-                "ticker": ticker,
-                "headline": article.get("title", ""),
-                "source": article.get("source", "alpha_vantage"),
-            })
+        # Pagination: Polygon returns a next_url with a cursor token.
+        # On subsequent requests, use next_url directly (no params needed).
+        next_url = data.get("next_url")
+        if next_url:
+            # Append API key to next_url (Polygon requires it on every request)
+            url = f"{next_url}&apiKey={api_key}"
+            params = {}  # next_url already contains all query params
+            time.sleep(RATE_LIMIT_SLEEP)
+        else:
+            url = None
 
-        return headlines if headlines else None
-
-    except Exception as e:
-        print(f"Alpha Vantage API error: {e}")
-        return None
+    return articles
 
 
-def create_curated_headlines(ticker: str) -> list[dict]:
-    """Create a curated headline dataset aligned with actual AAPL price moves.
+def load_trading_dates(ticker: str) -> set[str]:
+    """Load the set of actual trading dates from the raw OHLCV file.
 
-    For each trading day, assigns a representative headline based on
-    the actual return that day. This ensures the headlines are correlated
-    with market behavior (as real headlines would be).
+    These are dates where the market was open and AAPL traded.
+    Used to filter headlines to only trading days.
     """
-    # Load raw OHLCV to determine actual market moves
     ohlcv_path = project_root / "data" / "raw" / f"{ticker.lower()}_ohlcv.parquet"
     if not ohlcv_path.exists():
         raise FileNotFoundError(
             f"Raw OHLCV not found at {ohlcv_path}. Run P1-T1 first."
         )
-
     df = pd.read_parquet(ohlcv_path)
-    df["return"] = df["Close"].pct_change()
+    return {d.strftime("%Y-%m-%d") for d in df.index}
 
-    # Curated headline templates
-    # These are realistic financial headlines categorized by market move direction
-    bullish_headlines = [
-        f"{ticker} shares surge on strong quarterly earnings beat",
-        f"{ticker} stock rallies as revenue exceeds analyst expectations",
-        f"Wall Street raises {ticker} price target on robust demand",
-        f"{ticker} announces record services revenue, stock climbs",
-        f"Analysts upgrade {ticker} citing strong product cycle momentum",
-        f"{ticker} gains after reporting better-than-expected iPhone sales",
-        f"Bull case for {ticker} strengthens as margins expand",
-        f"{ticker} outperforms market on positive supply chain reports",
-        f"Institutional investors increase {ticker} positions amid tech rally",
-        f"{ticker} stock rises on upbeat guidance for next quarter",
-        f"Morgan Stanley reiterates overweight rating on {ticker}",
-        f"{ticker} benefits from AI integration across product lineup",
-        f"Strong consumer spending data lifts {ticker} shares",
-        f"{ticker} announces expanded buyback program, shares tick higher",
-        f"Options market signals bullish sentiment on {ticker} ahead of earnings",
-        f"{ticker} market cap milestone reached as tech sector surges",
-        f"Positive reviews boost {ticker} new product launch outlook",
-        f"{ticker} supply chain improvements signal margin expansion ahead",
-        f"Fund managers add to {ticker} positions in latest filings",
-        f"{ticker} breaks through key resistance level on heavy volume",
-    ]
 
-    bearish_headlines = [
-        f"{ticker} shares drop on disappointing sales guidance",
-        f"Analysts cut {ticker} price target amid China demand concerns",
-        f"{ticker} stock slides as tech sector faces regulatory headwinds",
-        f"Weaker-than-expected {ticker} earnings send shares lower",
-        f"{ticker} faces supply chain disruptions, stock falls",
-        f"Competition concerns weigh on {ticker} as rivals gain market share",
-        f"{ticker} downgraded by Goldman Sachs on valuation concerns",
-        f"Rising interest rates pressure {ticker} and growth stocks broadly",
-        f"{ticker} shares decline after antitrust investigation announced",
-        f"Consumer spending slowdown raises concerns for {ticker} outlook",
-        f"{ticker} misses revenue estimates, CFO cites macro headwinds",
-        f"Short interest in {ticker} rises to six-month high",
-        f"{ticker} product recall impacts investor confidence",
-        f"Trade tensions escalate, {ticker} supply chain at risk",
-        f"{ticker} loses key patent dispute, shares under pressure",
-        f"Bearish options flow detected in {ticker} ahead of report",
-        f"{ticker} market share slips in latest industry survey",
-        f"Cost overruns in {ticker} services division concern analysts",
-        f"Negative revision cycle begins for {ticker} EPS estimates",
-        f"{ticker} breaks below 50-day moving average on broad selling",
-    ]
+def deduplicate_to_one_per_day(
+    articles: list[dict],
+    trading_dates: set[str],
+) -> list[dict]:
+    """Select one headline per trading day from the fetched articles.
 
-    neutral_headlines = [
-        f"{ticker} trades flat ahead of earnings announcement next week",
-        f"{ticker} holds steady as market awaits Fed decision",
-        f"Mixed signals for {ticker} as analysts debate near-term outlook",
-        f"{ticker} consolidates near all-time highs, volume light",
-        f"Options expiration week brings heightened {ticker} volatility",
-        f"{ticker} in-line results leave analysts maintaining current ratings",
-        f"Sector rotation leaves {ticker} range-bound this week",
-        f"{ticker} CEO discusses long-term strategy at investor conference",
-        f"Market focus shifts to macro data, {ticker} trades sideways",
-        f"{ticker} dividend announcement meets market expectations",
-        f"Institutional rebalancing keeps {ticker} in tight range",
-        f"{ticker} beta testing new features, market impact unclear",
-        f"Industry conference offers no new catalysts for {ticker}",
-        f"Balanced order flow in {ticker} suggests wait-and-see approach",
-        f"{ticker} seasonal patterns point to consolidation period",
-        f"Competing views on {ticker} valuation keep stock range-bound",
-        f"No surprises in {ticker} 10-Q filing, stock unchanged",
-        f"{ticker} insider transactions show mixed activity this month",
-        f"Technical analysts see {ticker} in no-man's land near support",
-        f"{ticker} peers report mixed results, sector outlook uncertain",
-    ]
+    For each trading day, picks the first article (by published_utc)
+    that mentions AAPL in its tickers list. Articles on non-trading
+    days (weekends, holidays) are discarded.
 
-    headlines = []
-    rng = np.random.RandomState(42)
+    Returns headline dicts in the output schema:
+        {date, ticker, headline, source}
+    """
+    # Group articles by trading date
+    day_to_articles: dict[str, list[dict]] = {}
+    for article in articles:
+        pub = article.get("published_utc", "")
+        if not pub:
+            continue
+        date_str = pub[:10]  # "YYYY-MM-DD"
 
-    for date, row in df.iterrows():
-        if pd.isna(row["return"]):
+        if date_str not in trading_dates:
             continue
 
-        date_str = date.strftime("%Y-%m-%d") if hasattr(date, "strftime") else str(date)[:10]
+        # Confirm AAPL is actually tagged (not just a passing mention)
+        tickers = article.get("tickers", [])
+        if TICKER not in tickers:
+            continue
 
-        ret = row["return"]
+        if date_str not in day_to_articles:
+            day_to_articles[date_str] = []
+        day_to_articles[date_str].append(article)
 
-        # Select headline based on actual market move
-        if ret > 0.01:  # >1% up
-            headline = rng.choice(bullish_headlines)
-        elif ret < -0.01:  # >1% down
-            headline = rng.choice(bearish_headlines)
-        else:  # within ±1%
-            headline = rng.choice(neutral_headlines)
-
+    # For each trading day, take the first article (already sorted by
+    # published_utc ascending from the API)
+    headlines = []
+    for date_str in sorted(day_to_articles.keys()):
+        article = day_to_articles[date_str][0]
+        publisher = article.get("publisher", {})
         headlines.append({
             "date": date_str,
-            "ticker": ticker,
-            "headline": headline,
-            "source": "curated_aligned",
+            "ticker": TICKER,
+            "headline": article.get("title", "").strip(),
+            "source": publisher.get("name", "unknown"),
         })
 
     return headlines
 
 
 def main():
-    ticker = "AAPL"
+    api_key = os.environ.get("POLYGON_API_KEY", "")
+    if not api_key:
+        print("ERROR: POLYGON_API_KEY not set in environment.")
+        print("Sign up for a free account at https://polygon.io")
+        print("Then add POLYGON_API_KEY=pk_... to your .env file.")
+        sys.exit(1)
 
-    # Try Alpha Vantage first
-    api_key = os.environ.get("ALPHA_VANTAGE_API_KEY", "")
-    api_headlines = try_alpha_vantage(ticker, api_key)
+    print(f"Fetching {TICKER} headlines from Polygon.io...")
+    print(f"Date range: {DATE_START} to {DATE_END}")
+    print(f"Rate limit: {RATE_LIMIT_SLEEP}s between pages\n")
 
-    if api_headlines and len(api_headlines) > 100:
-        print(f"Got {len(api_headlines)} headlines from Alpha Vantage")
-        headlines = api_headlines
-    else:
-        print("Using curated headlines aligned with actual market moves")
-        headlines = create_curated_headlines(ticker)
+    # Step 1: Fetch all articles from the API
+    articles = fetch_all_articles(api_key)
+    print(f"\nTotal articles fetched: {len(articles)}")
 
-    # Sort by date
-    headlines.sort(key=lambda h: h["date"])
+    if not articles:
+        print("ERROR: No articles returned. Check your API key and try again.")
+        sys.exit(1)
 
-    # Save
+    # Step 2: Load trading calendar from P1-T1 output
+    trading_dates = load_trading_dates(TICKER)
+    print(f"Trading dates in OHLCV: {len(trading_dates)}")
+
+    # Step 3: Deduplicate to one headline per trading day
+    headlines = deduplicate_to_one_per_day(articles, trading_dates)
+    print(f"Headlines after deduplication: {len(headlines)}")
+
+    # Step 4: Report coverage
+    covered_dates = {h["date"] for h in headlines}
+    # Only count trading dates within our target range
+    target_dates = {
+        d for d in trading_dates
+        if DATE_START <= d <= DATE_END
+    }
+    coverage = len(covered_dates & target_dates) / len(target_dates) if target_dates else 0
+    missing = sorted(target_dates - covered_dates)
+
+    print(f"Coverage: {coverage:.1%} of {len(target_dates)} trading days")
+    if missing:
+        print(f"Missing dates ({len(missing)}):")
+        for d in missing[:20]:
+            print(f"  {d}")
+        if len(missing) > 20:
+            print(f"  ... and {len(missing) - 20} more")
+
+    # Step 5: Save
     with open(output_path, "w") as f:
         json.dump(headlines, f, indent=2)
 
-    print(f"Saved {len(headlines)} headlines to {output_path}")
+    print(f"\nSaved {len(headlines)} headlines to {output_path}")
     print(f"Date range: {headlines[0]['date']} to {headlines[-1]['date']}")
 
     # Summary statistics
-    sources = set(h["source"] for h in headlines)
-    print(f"Sources: {sources}")
+    sources = {}
+    for h in headlines:
+        sources[h["source"]] = sources.get(h["source"], 0) + 1
+    print("\nHeadlines by source:")
+    for src, count in sorted(sources.items(), key=lambda x: -x[1])[:10]:
+        print(f"  {src}: {count}")
+
+    # Warn if coverage is low
+    if coverage < 0.90:
+        print(f"\nWARNING: Coverage is {coverage:.1%}, below the 90% target.")
+        print("The C-Gate handles missing Analyst signals by treating them as")
+        print("conflict (delta=1.0, action=flat), but low coverage degrades")
+        print("the system's ability to demonstrate agreement regimes.")
 
 
 if __name__ == "__main__":
@@ -915,24 +918,29 @@ if __name__ == "__main__":
 **Step 3: Run both download scripts**
 
 ```bash
-# Ensure P1-T1 has been run first (need raw OHLCV data for headline alignment)
+# Ensure P1-T1 has been run first (need raw OHLCV data for trading date alignment)
+# Ensure POLYGON_API_KEY is set in .env
 python scripts/download_phrasebank.py
 python scripts/download_headlines.py
 ```
+
+The headline download will take several minutes due to rate limiting (12.5 seconds per page, typically 3-8 pages depending on news volume for AAPL). Progress is printed to stdout.
 
 **Step 4: Verify data quality**
 
 Check:
 - `data/raw/financial_phrasebank.csv` has ~2,000-5,000 rows (varies by agreement subset)
-- `data/processed/headlines.json` has ~750 entries (one per trading day for 3 years)
-- Headlines dates align with actual AAPL trading days
-- No missing dates in the trading day sequence
+- `data/processed/headlines.json` has 400+ entries (one per trading day, coverage may not be 100%)
+- Headlines are real financial news (diverse publishers, specific details, not templated)
+- Headlines dates align with actual AAPL trading days (no weekends/holidays)
+- Coverage report shows ≥90% of trading days have headlines
+- No data leakage: headline content is NOT derived from or conditioned on that day's price return
 
 **Step 5: Commit**
 
 ```bash
 git add scripts/download_phrasebank.py scripts/download_headlines.py
-git commit -m "P1-T2: source FinancialPhraseBank and create aligned AAPL headline dataset"
+git commit -m "P1-T2: source FinancialPhraseBank and fetch real AAPL headlines from Polygon.io"
 ```
 
 ### Acceptance Criteria
@@ -940,10 +948,13 @@ git commit -m "P1-T2: source FinancialPhraseBank and create aligned AAPL headlin
 1. `data/raw/financial_phrasebank.csv` exists with `sentence` and `label` columns
 2. `data/processed/headlines.json` exists as a valid JSON array of objects
 3. Each headline object has keys: `date`, `ticker`, `headline`, `source`
-4. Headlines cover the full date range (2022-01-01 to 2024-12-31, or close to it)
-5. Headlines are correlated with actual market moves (bullish headlines on up days, etc.)
-6. No duplicate dates with identical headlines
-7. `load_headlines("AAPL", "2023-01-01", "2023-12-31")` returns ~250 items
+4. Headlines cover the full date range (2022-01-01 to 2024-12-31) with ≥90% trading-day coverage
+5. Headlines come from real financial news publishers (not templated or synthetic)
+6. No data leakage — headline selection is NOT conditioned on that day's price return
+7. No duplicate dates (exactly one headline per trading day)
+8. `load_headlines("AAPL", "2023-01-01", "2023-12-31")` returns ≥200 items
+9. Headline text is non-trivial (length > 10 characters, contains real content)
+10. Source field contains real publisher names (e.g., "Benzinga", "Investing.com")
 
 ### Files to Create
 
@@ -954,15 +965,17 @@ git commit -m "P1-T2: source FinancialPhraseBank and create aligned AAPL headlin
 
 ### Files to Modify
 
-- Potentially `pyproject.toml` if `datasets` library is needed
+- `pyproject.toml` — add `requests>=2.31.0` to dependencies (needed for Polygon.io API calls)
+- `.env.example` — add `POLYGON_API_KEY=`
 
 ### Human Checkpoint
 
-- **CRITICAL:** Review at least 20 headlines to verify quality and plausibility
-- Verify that bullish headlines align with positive return days
-- Verify that bearish headlines align with negative return days
+- **CRITICAL:** Review at least 20 headlines to verify they are real financial news articles, not synthetic or templated
+- Spot-check 5-10 headlines against external sources (Google the headline text) to confirm authenticity
+- Verify headline diversity — no repeated templates, varied publishers, specific details
+- Check the coverage report — if below 90%, decide whether to supplement missing days or accept the gaps (the C-Gate already handles missing Analyst signals as conflict)
 - Check the FinancialPhraseBank for expected format (sentence + label)
-- Decide whether the curated headlines are sufficient or if real API headlines are needed
+- Verify no data leakage: skim 10 bullish-sounding headlines and confirm they do NOT systematically appear on positive-return days only
 
 ---
 
@@ -1071,7 +1084,7 @@ class TestHeadlines:
     def test_loads(self):
         headlines = load_headlines("AAPL")
         assert isinstance(headlines, list)
-        assert len(headlines) > 500  # ~750 expected
+        assert len(headlines) > 400  # ~500-700 expected from Polygon.io
 
     def test_structure(self):
         headlines = load_headlines("AAPL")
@@ -1081,7 +1094,7 @@ class TestHeadlines:
 
     def test_date_filtering(self):
         headlines = load_headlines("AAPL", start_date="2023-06-01", end_date="2023-06-30")
-        assert len(headlines) > 15  # ~22 trading days in June
+        assert len(headlines) > 10  # ~20 trading days in June, expect ≥90% coverage
         assert len(headlines) < 30
         for h in headlines:
             assert h["date"] >= "2023-06-01"

@@ -1,0 +1,39 @@
+# DQN Baseline Hyperparameters (pre-sweep defaults)
+# These are reasonable starting points before W&B sweep optimization.
+# Architecture matches PPO frozen (v4): 2x64 Tanh
+
+algorithm: DQN
+
+# Network architecture
+net_arch: [64, 64]
+activation_fn: Tanh
+
+# Core DQN hyperparameters
+learning_rate: 0.000198        # Same as PPO v4 winner
+gamma: 0.95                    # Same as PPO v4 winner
+buffer_size: 50000             # ~66x episode length
+learning_starts: 1000          # Fill buffer before learning
+exploration_fraction: 0.4      # 40% of training for epsilon decay
+exploration_initial_eps: 1.0   # Start fully random
+exploration_final_eps: 0.05    # 5% random at end
+target_update_interval: 1000   # Hard target network update every 1k steps
+train_freq: 4                  # Train every 4 env steps
+gradient_steps: 1              # 1 gradient step per train_freq
+batch_size: 64                 # Match PPO
+tau: 1.0                       # Hard target updates (not Polyak)
+
+# Training budget
+total_timesteps: 250000        # 200k-300k range; early stopping should fire sooner
+patience: 10                   # Eval periods without val improvement before stopping
+eval_freq: 2048                # Evaluate on val every 2048 steps (match PPO rollout size)
+
+# Reward
+reward_type: log_return
+norm_reward: false              # No reward normalization (no VecNormalize)
+
+# Environment (match PPO exactly)
+n_envs: 1                      # DQN requires single env for replay buffer
+ticker: AAPL
+lookback_window: 10
+transaction_cost: 0.001
+slippage: 0.0005

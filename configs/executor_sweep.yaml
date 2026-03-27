@@ -1,0 +1,56 @@
+# W&B Hyperparameter Sweep Configuration for Executor PPO Agent
+# Phase 2, Sweep v4: Early stopping enabled. Wider search including dsr_eta.
+# sweep_train.py now has ValCheckpointCallback (patience=3) — val Sharpe is
+# measured after each rollout (every 32k steps), best checkpoint is saved,
+# and training stops after 3 rollouts without improvement.
+# Training objective — maximize val/sharpe_ratio (from best checkpoint)
+
+program: src/executor/sweep_train.py
+method: bayes
+metric:
+  name: val/sharpe_ratio
+  goal: maximize
+
+# 20 runs: enough for Bayesian optimization to converge
+run_cap: 20
+
+parameters:
+  # Learning rate: centered on 1.98e-4 winner, wider log-uniform
+  learning_rate:
+    distribution: log_uniform_values
+    min: 5.0e-5
+    max: 5.0e-4
+
+  # Discount factor: uniform around 0.96 winner
+  gamma:
+    distribution: uniform
+    min: 0.93
+    max: 0.98
+
+  # Entropy bonus coefficient: centered on 7.2e-3 winner
+  ent_coef:
+    distribution: log_uniform_values
+    min: 3.0e-3
+    max: 2.0e-2
+
+  # DSR eta (reward smoothing): centered on 7.86e-3, now tunable
+  dsr_eta:
+    distribution: log_uniform_values
+    min: 3.0e-3
+    max: 2.0e-2
+
+  # Inaction penalty: centered on 5.7e-5 winner
+  inaction_penalty:
+    distribution: log_uniform_values
+    min: 1.0e-5
+    max: 2.0e-4
+
+# Fixed hyperparameters (hardcoded in sweep_train.py):
+#   n_steps:          4096
+#   total_timesteps:  200,000 (upper bound; early stopping fires sooner)
+#   patience:         3 (rollouts without val improvement)
+#   batch_size:       64
+#   n_epochs:         10
+#   gae_lambda:       0.95
+#   clip_range:       0.2
+#   seed:             42

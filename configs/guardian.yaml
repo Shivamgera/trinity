@@ -1,0 +1,15 @@
+# Guardian Agent Configuration
+# =================================
+# Stage 1: Hard Constraints (unconditional, pre-C-Gate)
+# Stage 2: Delta-Aware Adaptive Policy (post-C-Gate)
+
+hard_constraints:
+  max_position_size: 1.0      # Max position as fraction of portfolio (1.0 = 100%)
+  max_daily_loss: 0.05        # 5% daily loss -> circuit breaker
+  max_drawdown: 0.15          # 15% max drawdown -> circuit breaker
+  min_cash_reserve: 0.10      # 10% minimum cash reserve
+
+adaptive_policy:
+  ambiguity_position_scale: 0.5   # Reduce position to 50% during ambiguity
+  ambiguity_stop_loss: 0.02       # 2% stop-loss during ambiguity
+  conflict_action: 0               # Force flat (0) during conflict
