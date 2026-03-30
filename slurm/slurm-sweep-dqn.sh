@@ -14,10 +14,15 @@
 #
 # SWEEP_ID is passed via --export when sbatch is called from launch-dqn-sweep.sh.
 
+cd ~/trinity
+export PATH="$PWD/env/bin:$PATH"
+
 mkdir -p slurm/logs
 
-# Source shared environment setup
-source slurm/common.sh
+# Load W&B credentials
+if [[ -f slurm/.env ]]; then
+    set -a; source slurm/.env; set +a
+fi
 
 echo "=== DQN Sweep Agent (array task ${SLURM_ARRAY_TASK_ID}) ==="
 echo "Sweep ID: ${SWEEP_ID}"
@@ -29,4 +34,4 @@ if [[ -z "$SWEEP_ID" ]]; then
 fi
 
 # Run the W&B sweep agent — it will pull configs and run sweep_train_dqn.py
-wandb agent "$SWEEP_ID"
+env/bin/python -m wandb agent "$SWEEP_ID"
