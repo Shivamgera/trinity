@@ -2,7 +2,6 @@
 #SBATCH --job-name=trinity-gpu-check
 #SBATCH --partition=gpu
 #SBATCH --account=slurm-students
-#SBATCH --gres=gpu:1
 #SBATCH --time=00:05:00
 #SBATCH --cpus-per-task=1
 #SBATCH --mem=2G
