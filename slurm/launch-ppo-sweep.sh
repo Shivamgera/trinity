@@ -14,6 +14,14 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
 cd "$PROJECT_ROOT"
 
+# Activate virtual environment
+if [[ -f env/bin/activate ]]; then
+    source env/bin/activate
+else
+    echo "ERROR: env/bin/activate not found. Run 'sbatch slurm/slurm-setup.sh' first."
+    exit 1
+fi
+
 # Load W&B credentials
 if [[ -f slurm/.env ]]; then
     set -a; source slurm/.env; set +a
