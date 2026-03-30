@@ -8,19 +8,10 @@
 #   bash slurm/launch-ppo-sweep.sh
 #   bash slurm/launch-ppo-sweep.sh 4   # override: 4 parallel agents
 
+cd ~/trinity
+export PATH="$PWD/env/bin:$PATH"
+
 set -e
-
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
-cd "$PROJECT_ROOT"
-
-# Activate virtual environment
-if [[ -f env/bin/activate ]]; then
-    source env/bin/activate
-else
-    echo "ERROR: env/bin/activate not found. Run 'sbatch slurm/slurm-setup.sh' first."
-    exit 1
-fi
 
 # Load W&B credentials
 if [[ -f slurm/.env ]]; then
@@ -34,7 +25,7 @@ N_AGENTS=${1:-8}
 
 echo "=== Creating PPO W&B Sweep ==="
 set +e
-SWEEP_OUTPUT=$(wandb sweep configs/executor_sweep.yaml 2>&1)
+SWEEP_OUTPUT=$(env/bin/python -m wandb sweep configs/executor_sweep.yaml 2>&1)
 SWEEP_EXIT=$?
 set -e
 echo "$SWEEP_OUTPUT"
@@ -42,7 +33,7 @@ echo "$SWEEP_OUTPUT"
 if [[ $SWEEP_EXIT -ne 0 ]]; then
     echo "ERROR: wandb sweep failed (exit code $SWEEP_EXIT)."
     echo "Check that wandb is installed and WANDB_API_KEY is valid."
-    echo "Try running manually: wandb sweep configs/executor_sweep.yaml"
+    echo "Try running manually: env/bin/python -m wandb sweep configs/executor_sweep.yaml"
     exit 1
 fi
 
@@ -51,7 +42,7 @@ SWEEP_ID=$(echo "$SWEEP_OUTPUT" | grep -oP '[\w-]+/[\w-]+/[\w]+$' | tail -1)
 
 if [[ -z "$SWEEP_ID" ]]; then
     echo "ERROR: Could not extract sweep ID from wandb output."
-    echo "Try running 'wandb sweep configs/executor_sweep.yaml' manually and note the sweep ID."
+    echo "Try running 'env/bin/python -m wandb sweep configs/executor_sweep.yaml' manually and note the sweep ID."
     echo "Then launch agents with: sbatch --array=1-${N_AGENTS} slurm/slurm-sweep-ppo.sh <sweep_id>"
     exit 1
 fi
