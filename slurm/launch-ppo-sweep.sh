@@ -33,8 +33,18 @@ fi
 N_AGENTS=${1:-8}
 
 echo "=== Creating PPO W&B Sweep ==="
+set +e
 SWEEP_OUTPUT=$(wandb sweep configs/executor_sweep.yaml 2>&1)
+SWEEP_EXIT=$?
+set -e
 echo "$SWEEP_OUTPUT"
+
+if [[ $SWEEP_EXIT -ne 0 ]]; then
+    echo "ERROR: wandb sweep failed (exit code $SWEEP_EXIT)."
+    echo "Check that wandb is installed and WANDB_API_KEY is valid."
+    echo "Try running manually: wandb sweep configs/executor_sweep.yaml"
+    exit 1
+fi
 
 # Extract sweep ID (format: wandb agent entity/project/sweep_id)
 SWEEP_ID=$(echo "$SWEEP_OUTPUT" | grep -oP '[\w-]+/[\w-]+/[\w]+$' | tail -1)
