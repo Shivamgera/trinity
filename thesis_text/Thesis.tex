@@ -1,0 +1,156 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% LaTeX book template                           %%
+%% Author:  Amber Jain (http://amberj.devio.us/) %%
+%% License: ISC license                          %%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\documentclass[a4paper,11pt, openright]{book}
+
+\raggedbottom %prevents LaTeX from stretching text vertically to fill pages
+\widowpenalty=10000
+\clubpenalty=10000
+\brokenpenalty=10000
+
+\usepackage{csquotes}
+\usepackage[english]{babel}
+\MakeOuterQuote{"}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{sectsty}
+\usepackage{helvet}
+\usepackage{utopia}
+\usepackage{setspace}
+\usepackage{enumitem} % För att justera avstånd i listor
+\usepackage{etoolbox} % För att patcha LaTeX-kommandon
+\usepackage{setspace} % För att ställa in radavstånd
+\usepackage{textgreek} % For Greek letters like Δ in text
+\usepackage{array}    % For more flexible column definitions
+\usepackage{booktabs} % For better table rules
+\usepackage{amsmath, amssymb}
+
+\allsectionsfont{\sffamily} 
+
+\usepackage{url}
+\usepackage[style=numeric, backend=biber]{biblatex}
+\addbibresource{biblio.bib}
+\setcounter{biburllcpenalty}{1}
+\setcounter{biburlucpenalty}{0}
+
+\usepackage[a4paper,margin=1.6in,centering]{geometry}
+\usepackage{fancyhdr}
+\pagestyle{fancy}
+\fancyhf{}
+\renewcommand{\headrulewidth}{0pt}
+\fancyfoot[C]{\thepage} 
+
+\usepackage{tocbibind}
+\usepackage{longtable} % For multi-page tables
+\usepackage{array}
+
+\usepackage{titlesec}
+\titleformat{\chapter}[display]
+{\bfseries\fontsize{40}{50}\sffamily}
+  {\thechapter} % Label format
+  {20 pt} % Space between label and title
+  {\Huge} % Before the title
+
+
+  
+% modern I original
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Source: http://en.wikibooks.org/wiki/LaTeX/Hyperlinks %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\usepackage{hyperref}
+\usepackage{graphicx}
+\usepackage{tikz}
+\usepackage{tcolorbox}
+\usepackage{xcolor}
+\definecolor{mylightblue}{RGB}{200,255,255}
+%\usepackage[english]{babel}
+
+\newenvironment{myitemize}
+  {\begin{itemize}\setstretch{1.15}}
+  {\end{itemize}}
+
+\newenvironment{compactitemize}{
+  \begin{itemize}[itemsep=0.0em]
+}{
+  \end{itemize}
+}
+
+\linespread{1.15}
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% 'dedication' environment: To add a dedication paragraph at the start of book %
+% Source: http://www.tug.org/pipermail/texhax/2010-June/015184.html            %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\newenvironment{dedication}
+{
+   \cleardoublepage
+   \thispagestyle{empty}
+   \vspace*{\stretch{1}}
+   \hfill\begin{minipage}[t]{0.66\textwidth}
+   \raggedright
+}
+{
+   \end{minipage}
+   \vspace*{\stretch{3}}
+   \clearpage
+}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Chapter quote at the start of chapter        %
+% Source: http://tex.stackexchange.com/a/53380 %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\makeatletter
+\renewcommand{\@chapapp}{}% Not necessary...
+\newenvironment{chapquote}[2][2em]
+  {\setlength{\@tempdima}{#1}%
+   \def\chapquote@author{#2}%
+   \parshape 1 \@tempdima \dimexpr\textwidth-2\@tempdima\relax%
+   \itshape}
+  {\par\normalfont\hfill--\ \chapquote@author\hspace*{\@tempdima}\par\bigskip}
+\makeatother
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% First page of book which contains 'stuff' like: %
+%  - Book title, subtitle                         %
+%  - Book author name                             %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+\begin{document}
+
+\frontmatter
+
+\include{Contents/Title}
+\include{Contents/Abstract}
+\include{Contents/Acknowledgements}
+\include{Contents/Abbreviations}
+
+\listoffigures
+\listoftables
+\tableofcontents
+
+\mainmatter
+
+\include{Contents/Chapters/Introduction}
+\include{Contents/Chapters/Extended Background}
+\include{Contents/Chapters/Method}
+\include{Contents/Chapters/Results}
+\include{Contents/Chapters/Discussion}
+
+\printbibliography
+\addtocontents{toc}{\bigskip}
+\addcontentsline{toc}{part}{Bibliography}
+
+\appendix
+\cleardoublepage
+\addtocontents{toc}{\bigskip}
+\addcontentsline{toc}{part}{Appendices}
+\include{Contents/Appendices/Consent Form}
+\include{Contents/Appendices/Interview Questions}
+
+\end{document}

@@ -1,0 +1,907 @@
+\chapter{Discussion} \label{cha:discussion}
+
+This thesis set out to investigate whether structural fault tolerance---achieved
+through deliberate architectural separation and cross-modal arbitration rather
+than through hardening individual models---can improve the robustness of a
+heterogeneous financial AI system under adversarial signal injection. The
+preceding chapter presented the empirical results of evaluating the Robust
+Trinity architecture on AAPL daily equity data across clean and adversarial
+conditions. This chapter interprets those results and situates them within the
+broader literature. Section~\ref{sec:disc-prior-work} compares the findings
+with prior work along five axes identified in the Extended Background.
+Section~\ref{sec:disc-rq} provides explicit answers to the main research
+question and its three sub-questions.
+Section~\ref{sec:disc-limitations} discusses the limitations of the study.
+Section~\ref{sec:disc-validity} addresses validity and reliability.
+Section~\ref{sec:disc-ethics} considers ethical and societal implications.
+Section~\ref{sec:disc-tools} describes the use of IT and AI tools throughout
+the project. Section~\ref{sec:disc-future} outlines directions for future
+research, and Section~\ref{sec:disc-concluding} provides a brief concluding
+summary.
+
+%% ====================================================================
+\section{Comparison with Prior Work}
+\label{sec:disc-prior-work}
+%% ====================================================================
+
+The Extended Background (Chapter~\ref{cha:extendBackground}) identified four
+gaps in the literature: the absence of cross-modal scope in existing robustness
+mechanisms, the predominant focus on training-time rather than inference-time
+defences, the rarity of economically grounded evaluation, and the lack of
+concrete architectural mechanisms behind governance-level safety aspirations.
+This section examines how Trinity's empirical results relate to the five
+principal lines of prior work surveyed there, and discusses where the present
+contribution is original and where it confirms, extends, or diverges from
+existing findings.
+
+%% --------------------------------------------------------------------
+\subsection{Tight-Fusion Architectures}
+\label{sec:disc-tight-fusion}
+
+The most direct point of comparison is with tight-fusion systems that embed
+LLM-derived signals directly into RL trading agents.
+\cite{benhenda2025finrl} demonstrate that FinRL-DeepSeek, which integrates
+sentiment and risk scores from a DeepSeek LLM into a risk-sensitive RL policy,
+achieves performance gains on Nasdaq-100 equities under benign conditions.
+Trinity takes the opposite architectural stance: the Analyst (GPT-5) and the
+Executor (PPO) share \emph{no} features, no intermediate representations, and
+no gradient paths. The Analyst observes only text headlines; the Executor
+observes only 14~z-normalised numeric features over a 10-day lookback window.
+The C-Gate arbitrates their outputs at inference time without coupling them
+during training.
+
+The adversarial results provide direct evidence for the value of this
+separation. Under analyst poisoning at all five corruption rates
+(Table~\ref{tab:poison-maxdd}), the Executor-Only configuration maintains a
+constant maximum drawdown of $15.28\%$, entirely unaffected by the corrupted
+semantic channel. Had the Executor consumed LLM-derived features---as in a
+FinRL-DeepSeek-style architecture---analyst poisoning would have propagated
+into the numeric policy's action selection. The channel independence confirmed
+in Chapter~\ref{cha:results} is a structural consequence of the architectural
+separation, not an empirical coincidence: because the two agents share no
+inputs, compromise of one channel is mathematically prevented from affecting
+the other.
+
+This does not imply that tight fusion is always inferior. Under benign
+conditions, FinRL-DeepSeek's direct feature integration plausibly captures
+cross-modal correlations that Trinity's separated channels cannot exploit,
+which may explain why Trinity does not outperform simpler baselines on
+return-based metrics. The trade-off is explicit: Trinity sacrifices the
+potential performance gains of cross-modal feature sharing in exchange for a
+\emph{containment guarantee} that localises the damage of adversarial
+compromise to the attacked channel. Whether this trade-off is worthwhile
+depends on the deployment context; in environments where adversarial risk is
+material---such as production trading systems exposed to manipulated news
+feeds---the containment property may outweigh the forgone return.
+
+%% --------------------------------------------------------------------
+\subsection{Trust-Weighted Aggregation}
+\label{sec:disc-trust-weighted}
+
+\cite{you_stablecoin_2026} apply trust-weighted aggregation to stablecoin
+reserve management, where heterogeneous agents submit signals about reserve
+adequacy and a central mechanism weights contributions by each agent's
+observed behavioural reliability. Under adversarial stress testing---where a
+fraction of agents submit deliberately misleading signals---the trust-weighted
+scheme reduces peak peg deviation by 57\% relative to unweighted averaging.
+
+The C-Gate can be understood as an inference-time, two-agent instantiation of
+this same principle. Rather than weighting multiple homogeneous agents by
+historical reliability, the C-Gate measures the real-time divergence
+$\Delta_t = 1 - \pi_{\text{RL}}(d_{\text{LLM}} \mid s_t)$ between two
+structurally heterogeneous agents and maps this divergence onto a three-regime
+policy: full position when the agents agree ($\Delta \leq 0.6935$), half
+position with a protective stop-loss during ambiguity, and a flat (cash)
+position during conflict ($\Delta > 0.9877$). Both systems achieve drawdown or
+deviation reduction under adversarial conditions---Trinity reduces mean maximum
+drawdown by 44\% relative to Executor-Only
+(Table~\ref{tab:clean-baselines}), and the stablecoin system reduces peak
+deviation by 57\%. Both do so by treating inter-agent disagreement as a
+first-class risk signal rather than averaging over it.
+
+The key difference is domain and modality. The stablecoin system aggregates
+agents operating within a single domain (decentralised finance reserves) over
+homogeneous signal types. Trinity aggregates agents operating over
+fundamentally different modalities---natural-language sentiment and numeric
+price features---which means the divergence metric must bridge a semantic-numeric
+gap rather than compare like with like. The C-Gate's design choice of using the
+Executor's own policy probability as the bridge
+($\pi_{\text{RL}}(d_{\text{LLM}} \mid s_t)$) is a direct response to this
+cross-modal challenge: it avoids the need for a shared feature space by asking
+how probable the Analyst's recommendation is under the Executor's learned
+world model.
+
+%% --------------------------------------------------------------------
+\subsection{Byzantine Fault Tolerance and Ensemble Diversity}
+\label{sec:disc-bft-ensemble}
+
+A third line of comparison connects Trinity to work on Byzantine fault
+tolerance (BFT) and adversarial robustness through ensemble diversity.
+\cite{devadoss_byzantine_2025} argue that AI systems should be constructed from
+multiple heterogeneous modules coordinated through consensus protocols,
+borrowing the core insight of \cite{lamport1982byzantine} and
+\cite{castro1999pbft}: that a system can tolerate up to $f$ faulty components
+among $n$ if the remaining honest components can outvote or detect the
+compromised ones. In the ensemble robustness literature,
+\cite{chen_diversity_2024-1} demonstrate with the EADSR framework that
+training ensemble members to produce explicitly differentiated predictions
+reduces adversarial transfer, while \cite{pang_improving_2019} show that
+adversarial vulnerability in ensembles scales with the degree of error
+correlation across members.
+
+Trinity can be interpreted as a minimal-case BFT mechanism operating with
+$n = 2$ agents and $f = 1$ tolerated fault. The C-Gate does not implement a
+majority-vote consensus---with only two agents, no majority exists when they
+disagree---but it achieves an analogous function through a different mechanism:
+when the two agents conflict, the system defaults to the safest possible
+action (flat position) rather than trusting either agent. The empirical
+results support this interpretation. Under analyst poisoning, where the
+semantic channel is compromised, Trinity's maximum drawdown remains within
+$7.15\%$--$9.98\%$ across all five corruption rates
+(Table~\ref{tab:poison-maxdd}). Under executor perturbation, where the
+numeric channel is corrupted, Trinity's maximum drawdown remains within
+$6.23\%$--$9.19\%$ (Table~\ref{tab:perturb-maxdd}). In both cases, the
+system contains the damage of a single-channel compromise without knowing
+\emph{which} channel is compromised---the C-Gate responds to the fact of
+disagreement, not to its source.
+
+The connection to ensemble diversity is equally direct. The EADSR and related
+work operate within a single modality: multiple image classifiers or multiple
+time-series forecasters whose diversity is increased through training
+objectives. Trinity generalises this principle from \emph{intra-modal} ensemble
+diversity to \emph{inter-modal} architectural diversity. The Analyst and
+Executor are diverse not because they were trained with different
+objectives on the same data, but because they operate on fundamentally
+different data types with fundamentally different model classes. This
+structural diversity means their failure modes are inherently uncorrelated:
+a perturbation crafted to fool a text-processing LLM has no mechanism to
+simultaneously fool a policy network that has never seen text. The channel
+independence results in Chapter~\ref{cha:results} confirm this property
+empirically, providing a cross-modal analogue to the intra-modal decorrelation
+that \cite{pang_improving_2019} identify as the key driver of ensemble
+robustness.
+
+%% --------------------------------------------------------------------
+\subsection{Agentic Safety Frameworks}
+\label{sec:disc-agentic-safety}
+
+The agentic safety literature provides the governance context within which
+Trinity's contribution should be understood. \cite{kavathekar2025tamas}
+benchmark adversarial risks across multi-agent LLM configurations in the
+TAMAS framework, reporting high attack success rates under impersonation and
+Byzantine-style adversarial behaviour---particularly when agents can influence
+one another through shared message channels. \cite{yang_finvault_2026} evaluate
+execution-grounded LLM agents in FinVault, finding persistent vulnerabilities
+to prompt injection and authority bypass even when guardrails are applied.
+\cite{chen_standard_2025} argue that standard benchmarks underweight safety
+considerations, proposing that financial agents should be evaluated by how
+safely they fail rather than solely by how well they perform.
+\cite{kurshan_agentic_2025} propose the Agentic Regulator, a layered
+oversight architecture with monitoring at the model level, the firm level, and
+the regulatory level.
+
+Trinity maps onto this governance hierarchy in a concrete way. The C-Gate
+operates at the model level: it is an inference-time mechanism that detects
+cross-modal disagreement between two specific agents and translates that
+disagreement into a graded response. The Guardian's rule-based risk
+constraints---position sizing, stop-losses, fail-safe to cash---operate at
+the firm level: they enforce risk limits that no model output can override.
+Together, these two layers provide the kind of ``layered oversight'' that
+\cite{kurshan_agentic_2025} advocate, but with a concrete architectural
+implementation rather than a conceptual governance prescription.
+
+The TAMAS finding that shared message channels amplify vulnerability is
+particularly relevant. Trinity's channel independence is designed to
+eliminate precisely this attack vector: the Analyst and Executor share no
+message channel, no feature space, and no intermediate state. The C-Gate
+reads both agents' outputs but does not relay one agent's output to the
+other---it is a one-way arbitration layer, not a bidirectional communication
+channel. This architectural choice directly addresses the structural
+vulnerability that TAMAS identifies, though Trinity does so for a two-agent
+financial system rather than for the general multi-agent LLM configurations
+that TAMAS evaluates.
+
+The FinVault results reinforce a complementary point. Even when
+model-level guardrails are applied, \cite{yang_finvault_2026} find that
+LLM agents remain vulnerable to prompt injection and authority bypass in
+financial workflows. Trinity does not claim to solve this problem at the
+model level---the Analyst (GPT-5) is used as a frozen, pre-trained
+component without additional hardening. Instead, Trinity's defence operates
+one level higher: even if the Analyst is successfully manipulated, the
+C-Gate detects the resulting disagreement with the Executor and triggers a
+protective response. This is a form of \emph{architectural fault
+containment} rather than model-level robustness, and it complements rather
+than replaces the guardrail-based defences that FinVault evaluates.
+
+%% --------------------------------------------------------------------
+\subsection{Multi-Agent Adversarial Coordination}
+\label{sec:disc-multi-agent-adversarial}
+
+Two recent studies apply multi-agent or adversarial approaches to financial
+time-series problems. \cite{qiao_multi-agent_2025} propose a multi-agent
+adversarial architecture for time-series forecasting (MAA-TSF), in which
+heterogeneous agent populations outperform single models under volatile market
+conditions. \cite{xia_bayesian_2026} introduce Bayesian robust trading with
+adversarial synthetic data generators that stress-test RL trading policies
+under worst-case macroeconomic regimes.
+
+Trinity's results confirm the pattern identified by both studies: multi-agent
+architectures provide measurable robustness benefits under adversarial or
+volatile conditions compared to single-agent alternatives. The 44\% reduction
+in maximum drawdown that Trinity achieves relative to Executor-Only under
+clean conditions (Table~\ref{tab:clean-baselines}), and the tight drawdown
+band maintained across all ten adversarial intensities
+(Section~\ref{sec:adversarial}), are consistent with the general finding that
+heterogeneous agent populations handle distributional stress better than
+isolated models.
+
+However, Trinity diverges from both studies in an important respect. MAA-TSF
+and the Bayesian approach both demonstrate that their multi-agent architectures
+improve \emph{return} metrics under stress. Trinity does not. None of the
+active trading configurations---Trinity, Executor-Only, or Analyst-Only---achieves
+a positive mean Sharpe ratio on the test period
+(Table~\ref{tab:clean-baselines}), and the C-Gate ablation reveals that
+Trinity-no-CGate consistently outperforms Trinity on Sharpe in every evaluation
+condition (Table~\ref{tab:ablation-sharpe}). The C-Gate's value lies
+exclusively in \emph{risk containment}, not in return enhancement. This
+distinction is important for positioning Trinity's contribution accurately:
+the architecture does not make a trading system more profitable; it makes it
+more predictable under adversarial stress, at a measurable cost to return.
+
+Whether this trade-off is attractive depends on the objective function. For
+a risk-constrained institutional portfolio where drawdown limits are hard
+constraints---as is common under regulatory capital requirements and internal
+risk mandates---a system that maintains maximum drawdown within a 3.75~pp
+band ($6.23\%$--$9.98\%$) across all adversarial conditions may be preferable
+to one that occasionally achieves higher returns but with wider and less
+predictable drawdown exposure.
+
+%% --------------------------------------------------------------------
+\subsection{Cross-Study Positioning}
+\label{sec:disc-cross-study}
+
+Table~\ref{tab:cross-study} summarises the adversarial robustness evaluations
+reported by the studies discussed above, alongside Trinity's results, to
+contextualise the present contribution within the broader landscape.
+
+\begin{table}[h]
+\centering
+\caption{Qualitative comparison of adversarial robustness evaluations across
+  related studies. Metrics and domains differ across studies; the table is
+  intended to contextualise rather than rank.}
+\label{tab:cross-study}
+\small
+\begin{tabular}{p{2.8cm}p{2.2cm}p{2.4cm}p{2.0cm}p{3.2cm}}
+\toprule
+\textsc{Study} & \textsc{Domain} & \textsc{Attack Type} &
+  \textsc{Primary Metric} & \textsc{Key Finding} \\
+\midrule
+\cite{xia_bayesian_2026} &
+  RL trading, 9~instruments &
+  Adversarial macro-regime generation &
+  Sharpe, profitability &
+  Outperforms 9~baselines under COVID-era stress \\
+\addlinespace
+\cite{qiao_multi-agent_2025} &
+  Time-series forecasting, 19~assets &
+  Adversarial multi-agent training &
+  MAE, directional accuracy &
+  10--70\% MAE reduction; 5--25\% directional gains \\
+\addlinespace
+\cite{you_stablecoin_2026} &
+  Stablecoin reserves &
+  Adversarial agent injection &
+  Peak peg deviation &
+  57\% reduction vs.\ unweighted baseline \\
+\addlinespace
+\cite{goldblum_adversarial_2021} &
+  HFT order book &
+  Cost-constrained perturbation &
+  Profitability, risk &
+  Measurable degradation under budget-constrained attacks \\
+\addlinespace
+\cite{fursov_adversarial_2021} &
+  Fraud detection &
+  Synthetic transaction injection &
+  False-negative rate &
+  Few injected transactions fool DL models \\
+\addlinespace
+\cite{kavathekar2025tamas} &
+  Multi-agent LLMs &
+  Impersonation, Byzantine &
+  Attack success rate &
+  High ASR across 6~attack types and 10~LLMs \\
+\addlinespace
+\cite{yang_finvault_2026} &
+  LLM financial agents &
+  Prompt injection, authority bypass &
+  Attack success rate &
+  Up to 50\% ASR on SOTA models; 6.7\% on most robust \\
+\addlinespace
+\textbf{Trinity (this thesis)} &
+  Equity trading (AAPL) &
+  Signal flipping, Gaussian noise &
+  MaxDD band &
+  6.23--9.98\% across 10~intensities; 44\% MaxDD reduction vs.\ single-agent \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Several observations follow from this comparison. First, no directly
+comparable state-of-the-art exists for adversarial robustness in cross-modal,
+multi-agent financial trading systems. The studies in
+Table~\ref{tab:cross-study} span different domains (equity trading, stablecoin
+reserves, fraud detection, HFT, general forecasting), different attack models
+(learned adversarial generators, random perturbations, prompt injection,
+transaction injection), and different primary metrics (Sharpe ratio, MAE,
+peg deviation, attack success rate, maximum drawdown). These differences
+preclude direct numerical ranking and reflect the fragmented state of the
+field: adversarial robustness in financial AI is evaluated through
+domain-specific lenses with no shared benchmark or common evaluation protocol.
+
+Second, the studies that are closest in spirit to Trinity---Xia et al.\ and
+Qiao et al., both of which employ multi-agent or adversarial architectures for
+financial decision-making---report improvements in \emph{return} and
+\emph{accuracy} metrics under stress, whereas Trinity's measurable benefit is
+exclusively in \emph{risk containment} (maximum drawdown stability). This
+divergence underscores a fundamental design choice: Trinity prioritises
+predictable worst-case behaviour over expected-case performance, a trade-off
+that is explicit in the C-Gate's conflict-regime fail-safe to cash.
+
+Third, the safety benchmarks (TAMAS, FinVault) operate at a different level
+of abstraction: they measure attack success rates against model-level defences,
+whereas Trinity measures the economic consequences of attacks that
+\emph{succeed} at the model level but are \emph{contained} at the
+architectural level. These perspectives are complementary rather than
+competing---a system could incorporate both model-level guardrails (as
+evaluated by FinVault) and architectural fault containment (as evaluated here)
+within a layered defence.
+
+The absence of a directly comparable baseline is itself informative. It
+confirms the gap identified in the Extended Background
+(Chapter~\ref{cha:extendBackground}): inference-time cross-modal arbitration
+for adversarial robustness in financial trading has not been previously
+evaluated, and the contribution of this thesis occupies that gap.
+
+%% ====================================================================
+\section{Answering the Research Questions}
+\label{sec:disc-rq}
+%% ====================================================================
+
+This section provides explicit answers to the main research question and each
+sub-research question, with references to the supporting empirical evidence.
+
+\paragraph{SRQ1: How should semantic, numeric, and symbolic components be
+decomposed and coordinated to reduce correlated failure?}
+
+The results confirm that Trinity's channel independence---the Analyst observes
+only text headlines, the Executor observes only numeric features, and neither
+agent has access to the other's inputs---effectively eliminates correlated
+failure across channels. Under analyst poisoning, the Executor-Only
+configuration maintains constant performance metrics across all five corruption
+rates ($\text{MaxDD} = 15.28\%$; Table~\ref{tab:poison-maxdd}), because the
+corrupted semantic signals never enter the numeric channel. Symmetrically,
+under executor perturbation, the Analyst-Only configuration maintains constant
+performance ($\text{MaxDD} = 9.12\%$; Table~\ref{tab:perturb-maxdd}), because
+the injected Gaussian noise in the observation vector does not propagate to
+the semantic channel. This bidirectional isolation is a direct consequence of
+the architectural decomposition described in Section~\ref{sec:architecture}:
+by enforcing zero shared features between agents, the design ensures that
+compromise of one reasoning channel cannot automatically compromise the other.
+
+The coordination role is played by the C-Gate, which reads both agents' outputs
+without coupling their inputs. The three-regime policy---full position on
+agreement, reduced position on ambiguity, flat on conflict---provides a graded
+response mechanism that preserves the containment benefit of channel
+independence while still enabling the agents to contribute to a joint trading
+decision. The answer to SRQ1 is therefore that decomposition should enforce
+strict input separation across modalities, and coordination should operate
+exclusively at the output level through an arbitration mechanism that treats
+inter-agent disagreement as a risk signal.
+
+\paragraph{SRQ2: How can cross-modal divergence be defined and calibrated
+as a detection mechanism?}
+
+The divergence metric $\Delta_t = 1 - \pi_{\text{RL}}(d_{\text{LLM}} \mid
+s_t)$ was calibrated successfully at temperature $T = 1.0$ using raw softmax
+probabilities from the Executor's policy network. The calibration procedure,
+applied on the validation split (452~trading days), produced data-driven
+thresholds $\tau_{\text{low}} = 0.6935$ (30th percentile) and
+$\tau_{\text{high}} = 0.9877$ (80th percentile), yielding a regime
+distribution of approximately 30\% agreement, 50\% ambiguity, and 20\%
+conflict (Table~\ref{tab:calibration}). This distribution provides meaningful
+separation: the three regimes correspond to qualitatively different levels of
+inter-agent consistency, and the per-seed regime variation on the test split
+(Table~\ref{tab:regime-test}) demonstrates that the metric captures genuine
+differences in agent alignment rather than producing degenerate output.
+
+The importance of temperature selection was confirmed by a negative result.
+An earlier calibration at $T = 0.05$ produced degenerate thresholds
+($\tau_{\text{low}} = 0.9999$, $\tau_{\text{high}} = 1.0000$) because the
+sharpened softmax collapsed the policy distribution to near-one-hot vectors,
+pushing $\Delta$ to a bimodal $\{0, 1\}$ distribution with no continuous
+middle range. Switching to $T = 1.0$ restored a continuous $\Delta$
+distribution and improved mean test Sharpe from $-0.618$ to $-0.270$
+(Section~\ref{sec:calibration}). This result establishes that temperature
+is a critical hyperparameter for the divergence metric's discriminative
+power and must be set to preserve the full probability distribution rather
+than sharpening it.
+
+The answer to SRQ2 is that cross-modal divergence can be operationalised as
+the complement of the Executor's policy probability assigned to the Analyst's
+recommended action, calibrated with data-driven percentile thresholds on
+validation data at a temperature that preserves the policy distribution's
+continuous range. The metric successfully distinguishes varying levels of
+agent disagreement and supports a graded response policy.
+
+\paragraph{SRQ3: Does a structurally heterogeneous architecture with
+cross-modal arbitration provide measurable robustness improvements compared
+to single-agent and tightly fused alternatives under simulated adversarial
+conditions?}
+
+The answer is affirmative for risk containment and negative for return. Under
+clean conditions, Trinity achieves the lowest mean maximum drawdown at
+$8.60\%$, representing a 44\% reduction relative to the Executor-Only baseline
+($15.28\%$; Table~\ref{tab:clean-baselines}). Under adversarial pressure,
+Trinity's mean maximum drawdown remains within $6.23\%$--$9.98\%$ across all
+ten attack intensities---a combined range of approximately 3.75~percentage
+points---compared to $11.28\%$--$15.76\%$ for Executor-Only and
+$4.23\%$--$12.18\%$ for Analyst-Only (Section~\ref{sec:adversarial}). The
+C-Gate ablation demonstrates that the arbitration mechanism contributes a
+consistent $0.45$--$0.63$~pp reduction in maximum drawdown relative to
+Trinity-no-CGate across all evaluation conditions
+(Table~\ref{tab:ablation}).
+
+However, no active trading configuration achieves a positive mean Sharpe ratio
+except Trinity-no-CGate ($+0.238$), and the C-Gate consistently reduces
+Sharpe relative to the ablated variant in every condition
+(Table~\ref{tab:ablation-sharpe}). The AAPL buy-and-hold benchmark achieves a
+Sharpe of approximately $0.76$ over the same test period, outperforming all
+active systems on risk-adjusted return. The robustness improvement is therefore
+specific to drawdown containment: the architecture makes the system's worst-case
+losses more predictable and bounded, but does not improve profitability.
+
+\paragraph{Main RQ: How can structural fault tolerance be designed and
+evaluated in heterogeneous financial AI systems to improve robustness under
+adversarial signal injection?}
+
+The results demonstrate that structural fault tolerance can be designed through
+three interlocking mechanisms: (1)~channel independence, which prevents
+adversarial compromise from propagating across modalities; (2)~a cross-modal
+divergence metric that detects inter-agent disagreement in real time; and
+(3)~a graded response policy that reduces exposure proportionally to the
+detected disagreement. The evaluation framework---multi-seed assessment across
+multiple adversarial attack types and intensities, measured through economic
+risk metrics (maximum drawdown, Sharpe ratio, Sortino ratio)---provides a
+replicable methodology for quantifying the robustness improvement.
+
+The principal finding is that the value of structural fault tolerance lies in
+risk containment rather than return enhancement. The architecture achieves
+tighter and more stable drawdown bounds across adversarial conditions than
+any single-agent or ablated alternative, but it does so at a cost to
+return-based performance. This pattern is consistent with established
+principles in fault-tolerant systems design, where redundancy and fail-safe
+mechanisms improve reliability at the expense of throughput.
+
+%% ====================================================================
+\section{Limitations}
+\label{sec:disc-limitations}
+%% ====================================================================
+
+The findings reported in this thesis are subject to several limitations that
+constrain their generalisability, ecological validity, and the strength of
+the conclusions that can be drawn.
+
+\paragraph{Single asset and single market regime.}
+All experiments were conducted on a single equity ticker (AAPL) over a
+specific historical period. The training set spans approximately 756~trading
+days (2021--2023), and the test set covers the second half of 2024---a period
+characterised by a broadly bullish market environment for large-cap US
+technology equities. The architecture's robustness properties may not
+generalise to other asset classes (fixed income, commodities, foreign
+exchange), other market microstructures (order-book-driven venues, over-the-counter
+markets), or other market regimes (prolonged bear markets, range-bound
+environments, periods of extreme volatility). The fact that none of the active
+trading configurations outperforms buy-and-hold on Sharpe during the bullish
+test period suggests that the trained policies may be systematically
+miscalibrated to the prevailing regime, making it difficult to disentangle
+architectural robustness from regime-dependent underperformance.
+
+\paragraph{Small training dataset.}
+The training set of 756~daily bars is small by the standards of deep RL, where
+agents typically require millions of transitions to converge reliably. This
+data limitation manifests in two ways. First, the PPO Executor exhibits
+substantial cross-seed variance: individual-seed Trinity Sharpe ratios range
+from $+1.240$ (seed~123) to $-2.079$ (seed~6789), a spread that indicates
+high sensitivity to the stochastic elements of training (weight initialisation,
+minibatch sampling). Second, the DQN executor trained during this project
+similarly shows overfitting, with a validation-to-test Sharpe divergence
+(mean val Sharpe $-0.115$ vs.\ mean test Sharpe $-0.746$) that further
+confirms insufficient data for stable policy learning. The multi-seed
+evaluation design mitigates but does not eliminate this problem: the reported
+means are computed over only four seeds, which is too few for precise
+confidence intervals.
+
+\paragraph{Simulated adversarial attacks.}
+The two attack types evaluated---random signal flipping and additive Gaussian
+noise---are basic by the standards of adversarial machine learning. They model
+an attacker who corrupts signals uniformly at random, without knowledge of the
+system's architecture, thresholds, or current state. Real adversaries are
+strategic: they adapt their attacks based on observed system behaviour, target
+the most impactful signals, and may craft perturbations that specifically evade
+detection mechanisms such as the C-Gate. The NIST taxonomy
+\cite{vassilev2023nist} distinguishes between white-box, black-box, and
+adaptive adversaries; the attacks evaluated here fall into the weakest
+(random, untargeted) category. Trinity's robustness under these attacks is a
+necessary but not sufficient condition for robustness under more sophisticated
+threat models.
+
+\paragraph{No live deployment.}
+All evaluations were conducted in a simulation environment that assumes
+zero-slippage execution, instantaneous order fills at the daily close price,
+no transaction costs beyond those implicit in the daily return calculation,
+and no market impact. In live deployment, each of these assumptions breaks
+down to varying degrees depending on the traded instrument's liquidity,
+the order size relative to average daily volume, and the latency of the
+execution infrastructure. The gap between simulated and live performance is
+well documented in quantitative finance, and the results reported here should
+be understood as upper bounds on the performance achievable in practice.
+
+\paragraph{Pre-trained frozen agents.}
+Both the Analyst (GPT-5) and the Executor (PPO) are pre-trained and frozen:
+they do not adapt to new data during evaluation. This design choice was
+deliberate---freezing the agents ensures reproducibility and isolates the
+C-Gate's contribution from confounds introduced by online learning dynamics---but
+it also means the architecture cannot adapt to distributional shift in
+real time. A production system operating over months or years would encounter
+evolving market regimes, changing news vocabulary, and shifting cross-asset
+correlations that the frozen agents cannot track. The absence of online
+learning is a significant limitation for any claim about long-term deployed
+robustness.
+
+\paragraph{Analyst determinism and LLM stochasticity.}
+The Analyst's signals were generated by a single GPT-5 run per headline,
+with the resulting buy/hold/sell labels treated as deterministic inputs
+throughout all experiments. In practice, LLM outputs are stochastic: the same
+prompt can produce different completions across runs, and the degree of this
+variability depends on the model's temperature setting, the decoding strategy,
+and the prompt structure. By fixing a single realisation of the Analyst's
+signals, the experimental design eliminates one source of variance but also
+prevents any assessment of the Analyst's own reliability or the sensitivity
+of the C-Gate's regime assignments to LLM output variability. Quantifying
+this source of uncertainty would require multiple independent Analyst runs
+per headline and propagating the resulting signal distributions through the
+full evaluation pipeline.
+
+\paragraph{Two-agent C-Gate.}
+The C-Gate arbitrates between exactly two agents (Analyst and Executor). With
+$n = 2$, the system can detect that disagreement exists but cannot
+disambiguate which agent is compromised. In the classical BFT formulation, a
+system tolerating $f$ Byzantine faults requires $n \geq 3f + 1$ participants
+\cite{lamport1982byzantine}; with $n = 2$ and $f = 1$, no majority of honest
+agents exists. Trinity compensates by defaulting to the safest action (flat)
+during conflict, which is effective for drawdown containment but overly
+conservative when the disagreement is benign. Extending the architecture to
+$n > 2$ agents with a genuine consensus mechanism would address this
+limitation, at the cost of increased system complexity and the need for
+additional independent reasoning channels.
+
+%% ====================================================================
+\section{Validity and Reliability}
+\label{sec:disc-validity}
+%% ====================================================================
+
+\paragraph{Internal validity.}
+The experimental design controls for several potential confounds. The
+multi-seed evaluation (four frozen seeds per configuration) mitigates the
+risk that observed effects are artefacts of a single lucky or unlucky
+initialisation. The ablation of the C-Gate (Trinity vs.\ Trinity-no-CGate)
+isolates the arbitration mechanism's contribution by holding all other
+components constant. The two adversarial attack types target different
+channels independently, allowing the channel independence property to be
+verified in both directions. All configurations share the same training,
+validation, and test splits, the same precomputed Analyst signals, and the
+same Guardian risk rules, ensuring that performance differences can be
+attributed to the architectural variable under study rather than to
+differences in data or auxiliary components.
+
+One threat to internal validity is the small number of seeds. Four seeds
+provide limited statistical power: the observed mean differences---such as
+the $0.45$--$0.63$~pp MaxDD improvement from the C-Gate---are small relative
+to the cross-seed standard deviation, and formal hypothesis tests would have
+low power to reject the null. The results should therefore be interpreted as
+indicative of a consistent directional effect rather than as statistically
+significant in the conventional sense.
+
+\paragraph{External validity.}
+External validity is limited by the single-asset, single-period design. The
+findings are specific to AAPL daily equity trading during H2~2024 and may not
+transfer to other assets, frequencies, or market regimes. The simulated
+adversarial attacks, while informative about the architecture's structural
+properties, do not represent the full range of real-world adversarial threats.
+Generalisation claims require replication across multiple assets, market
+conditions, and attack models, which is beyond the scope of this thesis but
+is identified as a priority for future work.
+
+\paragraph{Reliability.}
+Several design choices promote reproducibility. All random seeds are frozen
+and reported. The Analyst's GPT-5 signals are precomputed and deterministic
+within the experimental pipeline. Library versions (Stable-Baselines3, PyTorch,
+Gymnasium) are pinned. The C-Gate calibration is fully deterministic given the
+validation-set divergence distribution. Training and evaluation scripts are
+version-controlled.
+
+The principal threat to reliability is the high cross-seed variance observed
+in the PPO Executor. Individual-seed Trinity Sharpe ratios range from $+1.240$
+to $-2.079$---a spread of more than three Sharpe units---which means that
+any single-seed result would be unreliable as a characterisation of the
+architecture's performance. The multi-seed mean ($-0.270$) is more stable but
+is computed over only four observations, leaving substantial uncertainty
+about the true population mean. Increasing the number of seeds would improve
+reliability but is constrained by the computational cost of full-pipeline
+evaluation (each seed requires separate C-Gate integration and adversarial
+evaluation across multiple attack types and intensities).
+
+\paragraph{Construct validity.}
+The choice of maximum drawdown as the primary robustness metric is
+well-justified for the study's risk-containment framing. MaxDD directly
+measures the worst peak-to-trough loss experienced by the portfolio---a
+quantity that is operationally meaningful for risk management and regulatory
+compliance. However, the Sharpe ratio may underweight Trinity's benefit in
+contexts where drawdown constraints are binding. A system that maintains
+tighter drawdown bounds but achieves lower mean return will appear inferior
+on Sharpe, even if its risk-adjusted value is higher under a drawdown-penalised
+objective function. The dual reporting of both MaxDD and Sharpe throughout the
+results is intended to make this trade-off transparent, but readers should be
+aware that the headline Sharpe comparison---in which no active system matches
+buy-and-hold---may create an impression of poor performance that does not fully
+reflect the architecture's risk-containment contribution.
+
+%% ====================================================================
+\section{Ethical and Societal Implications}
+\label{sec:disc-ethics}
+%% ====================================================================
+
+The development and evaluation of automated trading architectures raises
+several ethical and societal considerations that extend beyond the technical
+results reported in this thesis.
+
+\paragraph{Automated trading and market stability.}
+Algorithmic trading systems have been implicated in episodes of rapid market
+dislocation, most notably the 2010 Flash Crash, where automated selling
+cascades contributed to a temporary but severe drop in US equity prices
+\cite{kirilenko2017flash}. \cite{easley2011} further analyse how flow toxicity
+arising from automated trading can destabilise market microstructure.
+\cite{doi:10.1177/03063127211048515} examine systemic failures in algorithmic
+trading more broadly, arguing that the tight coupling of automated systems
+can amplify rather than contain market disruptions. While Trinity is evaluated
+on daily-frequency decisions with a single ticker and minimal market impact,
+the architectural principles it embodies---multi-agent coordination, automated
+arbitration, fail-safe responses---would raise legitimate concerns about
+systemic risk if deployed at scale across multiple assets and higher
+frequencies. The fail-safe mechanism that moves Trinity to a flat position
+during conflict could, if adopted by many similar systems simultaneously,
+contribute to coordinated withdrawal of liquidity during periods of market
+stress.
+
+\paragraph{LLM hallucination and opacity.}
+The Analyst component relies on GPT-5, a large language model whose internal
+reasoning is not transparent to the system operator. LLMs are known to produce
+confident but factually incorrect outputs---a phenomenon characterised as
+``stochastic parrots'' by \cite{10.1145/3442188.3445922}---and the financial
+domain is not exempt from this risk \cite{gehrmann2025risks}. Trinity's
+architecture partially mitigates this concern by treating the Analyst's output
+as one of two independent signals rather than as a trusted input, and the
+C-Gate's ability to override the Analyst during conflict provides a structural
+safeguard. However, the system cannot distinguish between an Analyst signal
+that is wrong because of adversarial manipulation and one that is wrong because
+of a hallucination. From an ethical standpoint, deploying LLM-derived trading
+signals without the ability to audit the reasoning chain raises questions about
+accountability when trades result in losses.
+
+\paragraph{Risk of false confidence.}
+Reporting that Trinity achieves ``robust'' performance under adversarial
+conditions carries a risk of engendering false confidence in the system's
+safety. The adversarial attacks evaluated are basic (random flipping, Gaussian
+noise), the evaluation covers a single asset over a single period, and the
+architecture has not been tested against adaptive adversaries or in live
+markets. Stakeholders who interpret the robustness results without accounting
+for the limitations discussed in Section~\ref{sec:disc-limitations} may
+overestimate the system's readiness for production deployment. Responsible
+communication of these results requires foregrounding the gap between
+simulated and real-world adversarial conditions.
+
+\paragraph{Environmental cost.}
+The use of GPT-5 for generating Analyst signals, even when precomputed
+offline, incurs a non-trivial computational and energy cost. The broader trend
+toward LLM-integrated financial systems amplifies this concern: if every
+trading decision requires an LLM inference pass, the aggregate energy
+consumption and carbon footprint of the financial industry's AI infrastructure
+increases correspondingly. This thesis does not quantify the environmental
+cost of the Analyst's inference pipeline, but acknowledges it as a factor that
+should be weighed against the marginal risk-containment benefit the Analyst
+provides.
+
+\paragraph{Responsible research practice.}
+This work was conducted in accordance with the principles of good research
+practice as articulated by the Swedish Research Council
+\cite{vr2017goodresearchpractice}. All experimental parameters, random seeds,
+and evaluation procedures are documented to enable replication. The results
+are reported transparently, including negative findings (no active system
+beats buy-and-hold on Sharpe) and limitations (high cross-seed variance, small
+dataset, basic adversarial attacks). No proprietary or personal data were
+used; the market data are publicly available historical prices and the news
+headlines are drawn from publicly accessible sources.
+
+%% ====================================================================
+\section{Use of IT and AI Tools}
+\label{sec:disc-tools}
+%% ====================================================================
+
+This section describes the software tools and AI systems used throughout the
+research project, consistent with the requirement to disclose and discuss the
+role of AI tools in the work.
+
+The core technical infrastructure consisted of Python~3.11,
+Stable-Baselines3 \cite{raffin2021stable} for PPO and DQN training,
+PyTorch as the underlying deep learning framework, and Gymnasium for the
+reinforcement learning environment interface. Weights~\&~Biases (WandB) was
+used for experiment tracking, hyperparameter sweep management, and result
+visualisation across the 50-trial DQN sweep and the multi-seed evaluation
+campaigns.
+
+The Analyst component was implemented using GPT-5 accessed through Azure
+OpenAI. All Analyst signals were precomputed offline: each news headline
+was processed by a single GPT-5 API call that produced a structured
+buy/hold/sell label with an associated confidence score. The choice to
+precompute signals ensured determinism and reproducibility across
+experiments, but it also means that the Analyst's behaviour is frozen to a
+single model snapshot and a single prompt template. Any changes to the
+underlying model (version updates, safety filter modifications) or prompt
+structure could alter the signal distribution in ways that would require
+recalibration of the C-Gate thresholds.
+
+AI-assisted coding tools were used extensively during development. GitHub
+Copilot provided inline code completions during the implementation of
+training scripts, evaluation pipelines, and data processing utilities.
+Anthropic's Claude was used as a conversational coding assistant for
+architectural design discussions, debugging, LaTeX writing, and
+experiment planning. These tools accelerated development by reducing
+boilerplate coding time and providing rapid feedback on implementation
+choices. However, all AI-generated code was reviewed, tested, and
+integrated by the author; the tools served as productivity aids rather
+than autonomous contributors. The use of AI coding assistants also
+introduces a reflexive consideration: a thesis investigating the
+robustness of AI systems was itself partially developed with the assistance
+of AI systems, which underscores both the pervasiveness of AI tools in
+modern software engineering and the importance of human oversight in
+ensuring the correctness and reproducibility of the resulting artefacts.
+
+The thesis document was prepared in \LaTeX{} using Overleaf as the
+collaborative editing environment. Version control was managed through Git,
+with all source code, configuration files, and experiment artefacts tracked
+in a single repository.
+
+%% ====================================================================
+\section{Future Research}
+\label{sec:disc-future}
+%% ====================================================================
+
+The limitations identified in Section~\ref{sec:disc-limitations} suggest
+several directions for future work, ranging from direct extensions of the
+current architecture to more fundamental research challenges.
+
+\paragraph{Multi-asset and multi-market generalisation.}
+The most immediate priority is evaluating the Trinity architecture across
+multiple assets, asset classes, and market regimes. The single-asset, single-period
+design of this thesis leaves open the question of whether the robustness
+properties observed for AAPL in H2~2024 are architecture-dependent or
+asset-dependent. A multi-asset evaluation would also enable portfolio-level
+analysis, where the interactions between per-asset C-Gate decisions and
+cross-asset correlation structure could reveal emergent behaviours not
+observable at the single-ticker level. Extension to different market
+microstructures---order-book-driven venues, decentralised finance protocols,
+commodity futures---would test whether the channel independence principle
+transfers to settings with different data characteristics and latency
+requirements.
+
+\paragraph{Adaptive and strategic adversaries.}
+The random attacks evaluated in this thesis represent the weakest threat
+model in the adversarial machine learning taxonomy. Future work should
+evaluate Trinity against adaptive adversaries that observe the system's
+behaviour and optimise their perturbations to maximise damage while evading
+the C-Gate's detection. This could include gradient-based attacks on the
+Executor's observation space (where the attacker has white-box access to the
+policy network), strategically timed headline manipulation that targets
+periods of high market uncertainty (where the C-Gate's ambiguity regime is
+most likely), and coordinated attacks that simultaneously perturb both
+channels. The NIST taxonomy \cite{vassilev2023nist} provides a structured
+framework for escalating adversarial sophistication, and the TAMAS benchmark
+\cite{kavathekar2025tamas} offers concrete attack scenarios that could be
+adapted to the financial trading context.
+
+\paragraph{Online learning and continual adaptation.}
+The frozen-agent design of this thesis sacrifices adaptability for
+reproducibility. A natural extension is to allow the Executor to update its
+policy incrementally as new market data arrive, while maintaining the
+C-Gate's arbitration function. This introduces several technical challenges:
+the C-Gate's calibrated thresholds may drift as the Executor's policy
+evolves, requiring online recalibration; the channel independence property
+must be preserved during adaptation, ruling out approaches that share
+features across agents; and the risk of catastrophic forgetting in the RL
+agent must be managed. Continual learning methods that maintain performance
+on past regimes while adapting to new ones---such as elastic weight
+consolidation or progressive neural networks---could provide a starting
+point, though their application to financial RL remains largely unexplored.
+
+\paragraph{DQN executor as an alternative to PPO.}
+The DQN infrastructure developed during this project provides a second
+executor implementation with a discrete action space and value-based
+learning. Preliminary multi-seed results show a tighter Q-value spread
+across seeds ($1.167 \pm 0.022$) but similar overfitting patterns to PPO
+(validation Sharpe $-0.115 \pm 1.272$ vs.\ test Sharpe $-0.746 \pm 1.656$).
+A head-to-head comparison of DQN and PPO executors within the full Trinity
+pipeline---including C-Gate integration and adversarial evaluation---would
+determine whether the choice of RL algorithm materially affects the
+architecture's robustness properties, or whether the robustness benefits are
+primarily a function of the architectural design (channel independence, C-Gate
+arbitration) rather than the specific executor implementation.
+
+\paragraph{Full BFT extension with $n > 2$ agents.}
+The two-agent C-Gate cannot disambiguate which agent is compromised during
+conflict. Extending the architecture to three or more independently reasoning
+agents---each consuming a different modality or data source---would enable
+majority-vote consensus and allow the system to identify and isolate the
+compromised component. For example, a third agent consuming alternative data
+(satellite imagery, supply chain signals, options flow) could serve as an
+independent tiebreaker. The classical BFT threshold of $n \geq 3f + 1$
+\cite{castro1999pbft} suggests that tolerating one Byzantine fault requires
+at least four agents, which is more demanding than the current two-agent
+design but potentially achievable with the diversity of data sources
+available in modern financial markets.
+
+\paragraph{Learned C-Gate thresholds.}
+The current thresholds ($\tau_{\text{low}}$, $\tau_{\text{high}}$) are set
+as fixed percentiles of the validation-set $\Delta$ distribution. An
+alternative approach would learn these thresholds jointly with a downstream
+objective---for example, minimising maximum drawdown subject to a return
+constraint---using the validation set as a tuning set. This could be
+implemented as a simple grid search, a Bayesian optimisation procedure, or
+a differentiable threshold layer trained end-to-end with the Guardian's
+risk rules. The risk of overfitting the thresholds to the validation period
+would need to be managed through appropriate regularisation or
+cross-validation.
+
+\paragraph{Integration with regulatory compliance frameworks.}
+The layered oversight structure of the Agentic Regulator
+\cite{kurshan_agentic_2025} suggests a path toward integrating Trinity's
+C-Gate with formal regulatory compliance mechanisms. The C-Gate's regime
+assignments (agreement, ambiguity, conflict) and the associated trading
+actions could be logged and audited as part of a model risk management
+framework, providing regulators with a transparent record of when the system
+detected inter-agent disagreement and how it responded. Mapping the C-Gate's
+behaviour onto regulatory requirements for model validation, stress testing,
+and explainability would require collaboration with compliance practitioners
+and is beyond the scope of this technical thesis, but it represents a
+practical direction for bridging the gap between architectural robustness
+research and production deployment.
+
+%% ====================================================================
+\section{Concluding Summary}
+\label{sec:disc-concluding}
+%% ====================================================================
+
+The Robust Trinity architecture demonstrates that structural fault
+tolerance---achieved through channel independence, cross-modal divergence
+detection, and a graded response policy---provides measurable robustness
+benefits under simulated adversarial conditions, specifically in the form of
+tighter and more stable maximum drawdown bounds. These benefits come at a
+cost to return-based performance: the C-Gate's conservative fail-safe policy
+reduces Sharpe relative to configurations that bypass the arbitration
+mechanism. The architecture's value proposition is therefore specific to
+risk-constrained settings where predictable worst-case behaviour is more
+important than maximising expected return. The limitations of the study---single
+asset, small dataset, basic adversarial attacks, frozen agents---constrain
+the strength of the conclusions but do not undermine the central finding that
+architectural separation and inference-time arbitration represent a viable and
+previously unexplored approach to robustness in heterogeneous financial AI.

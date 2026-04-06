@@ -44,8 +44,8 @@ parameters:
   # Fraction of training for epsilon decay (1.0 -> final_eps)
   exploration_fraction:
     distribution: uniform
-    min: 0.2
-    max: 0.6
+    min: 0.05
+    max: 0.20
 
   # Final epsilon after exploration decay
   exploration_final_eps:
@@ -67,7 +67,8 @@ parameters:
 
 # Fixed hyperparameters (hardcoded in sweep_train_dqn.py):
 #   total_timesteps:  250,000 (budget cap; early stopping fires sooner)
-#   patience:         10 (eval periods without val improvement)
+#   patience:         25 (eval periods without val improvement)
+#   min_timesteps:    30,000 (grace period — no early stopping before this)
 #   eval_freq:        2048 (steps between val evaluation)
 #   batch_size:       64
 #   tau:              1.0 (hard target updates)

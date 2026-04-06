@@ -1,0 +1,259 @@
+\chapter{Extended Background} \label{cha:extendBackground}
+
+This chapter reviews the literature that motivates and contextualises the architectural framework proposed in this thesis. It is organised into four sections. Section~\ref{sec:hetero-agentic} surveys the emergence of heterogeneous and agentic AI in finance, establishing the multi-modal, multi-agent landscape within which the proposed system operates. Section~\ref{sec:adv-ml} reviews adversarial machine learning research relevant to financial systems, covering both general threat taxonomies and finance-specific empirical evidence. Section~\ref{sec:robust-agg} examines robust aggregation mechanisms---from Byzantine fault tolerance to trust-weighted coordination---that inform the design of the C-Gate. Section~\ref{sec:ensembles-safety} discusses heterogeneous ensembles and agentic safety, addressing the system-level vulnerabilities that motivate an architectural rather than model-centric approach. The chapter concludes with a synthesis that identifies the gaps addressed by this thesis and positions the contribution relative to the state of the art.
+
+\section{Heterogeneous and Agentic AI in Finance} \label{sec:hetero-agentic}
+AI now permeates the full spectrum of financial services, including banking, capital markets, asset management, insurance, and regulatory compliance. Recent surveys document widespread experimentation with LLMs for customer service, document analysis, research synthesis, and investment support, with an increasing shift toward operationally embedded, high-stakes use cases. Industry reports further indicate that financial institutions anticipate sustained integration of "agentic AI" systems — models capable of tool use, planning, and state modification — into production workflows \cite{saha2025genai}.
+
+From a systems perspective, the literature suggests that financial AI is heterogeneous along three dimensions, which we synthesise from the sources surveyed in this chapter. The first is \emph{model heterogeneity}: production financial systems commonly deploy tabular models such as logistic regression and gradient boosting for structured prediction, deep sequence models for transaction and order-book processing, graph neural networks for entity relationship modelling, LLMs for text understanding, and rule-based engines for compliance — often within overlapping workflows \cite{saha2025genai, benhenda2025finrl}. The second is \emph{modality heterogeneity}: these models operate over fundamentally different data types — structured numeric time series, unstructured natural language, graph-structured entity networks, and scanned documents — each with distinct noise characteristics and attack surfaces \cite{vassilev2023nist, goldblum_adversarial_2021}. The third is \emph{agentic heterogeneity}: recent architectures organise multiple role-specific agents — trader, analyst, regulator, compliance monitor — as interacting participants within shared environments, each with distinct objectives and information access \cite{dwarakanath2024abidesecon, kratsios2025market}.
+
+These three dimensions of heterogeneity are increasingly reflected in recent system designs. \cite{benhenda2025finrl} demonstrates explicit modality fusion in FinRL-DeepSeek, which integrates LLM-derived sentiment and risk signals into a risk-sensitive RL trading agent, yielding performance gains on Nasdaq-100 equities. \cite{dwarakanath2024abidesecon} model macroeconomic systems as populations of heterogeneous learning agents interacting within realistic market microstructure in ABIDES-Economist, while \cite{kratsios2025market} combine adversarial learning with RL to approximate competitive market equilibria under strategic interaction. On the robustness side, \cite{xia_bayesian_2026} introduce adversarial synthetic market generators to stress-test RL trading policies under worst-case macro regimes, and You et al. [2026] employ trust-weighted aggregation across heterogeneous agents to enhance stablecoin reserve robustness under adversarial coordination.
+
+Collectively, this literature establishes that financial AI systems are increasingly multi-agent, cross-modal, and tightly coupled. While such integration improves adaptability and expressiveness, it also creates new forms of structural fragility — a concern examined in the following sections through the lens of adversarial risk and structural robustness.
+
+\section{Adversarial Machine Learning in Financial Systems} \label{sec:adv-ml}
+
+\subsection{Financial Risk Metrics Used in This Thesis} \label{sec:perf-metrics-bg}
+
+In financial contexts, robustness must be evaluated not only in terms of prediction accuracy but also in terms of economic risk \cite{baviskar2025robust}. A model that maintains high classification accuracy under adversarial perturbation may nonetheless produce trading decisions that incur severe financial losses. We therefore adopt four standard financial risk measures \cite{hull2023risk} that collectively capture profitability, risk-adjusted downside, and tail exposure.
+
+\paragraph{Profit and Loss (PnL)}
+Profit and Loss (PnL) measures cumulative trading gains or losses over a defined evaluation period. Let $\{r_t\}_{t=1}^{T}$ denote the sequence of returns. The cumulative PnL at time $T$ is given by
+\begin{equation}
+\mathrm{PnL}_T = \sum_{t=1}^{T} r_t.
+\end{equation}
+PnL provides the most direct measure of whether a system generates or destroys economic value, but it does not capture the risk taken to achieve that return.
+
+\paragraph{Value-at-Risk (VaR)}
+Value-at-Risk (VaR) quantifies downside risk by estimating the worst expected loss over a given time horizon at a specified confidence level. Formally, for a loss distribution $L$ and confidence level $\alpha \in (0,1)$
+\begin{equation}
+\mathrm{VaR}_\alpha = \inf \left\{ l \in \mathbb{R} \;:\; \mathbb{P}(L > l) \leq 1 - \alpha \right\}.
+\end{equation}
+For example, a daily $\mathrm{VaR}_{0.95}$ of €10{,}000 means that on 95\% of trading days, losses are not expected to exceed €10{,}000. VaR is widely used in regulatory capital requirements (Basel III) and internal risk management, but it has a known limitation: it describes the boundary of normal losses without characterising what happens beyond that boundary.
+
+\paragraph{Expected Shortfall (ES)}
+Expected Shortfall (ES), also known as Conditional Value-at-Risk (CVaR), addresses this limitation by measuring the average loss in the worst $(1-\alpha)$ fraction of outcomes
+\begin{equation}
+\mathrm{ES}_\alpha = \mathbb{E} \left[ L \mid L \geq \mathrm{VaR}_\alpha \right],
+\end{equation}
+Where VaR asks “what is the threshold of the worst 5\% of days?”, ES asks “given that we are in the worst 5\%, how bad is it on average?” This makes ES particularly important for evaluating adversarial robustness, because adversarial attacks are designed to produce precisely the kind of extreme tail outcomes that VaR alone does not fully characterise.
+
+\paragraph{Sharpe Ratio.}
+The annualised Sharpe ratio measures risk-adjusted return relative to total
+volatility:
+\begin{equation}
+\text{Sharpe} = \frac{\bar{r}}{\sigma_r} \cdot \sqrt{252},
+\end{equation}
+where $\bar{r}$ is the mean daily return, $\sigma_r$ is the population standard
+deviation of daily returns (computed with $\text{ddof}=0$), and 252 is the
+assumed number of trading days per year. A Sharpe ratio above zero indicates
+positive risk-adjusted performance; negative values indicate that the strategy
+underperforms a zero-return benchmark on a risk-adjusted basis.
+
+\paragraph{Sortino Ratio.}
+The Sortino ratio refines the Sharpe ratio by penalising only downside
+deviation:
+\begin{equation}
+\text{Sortino} = \frac{\bar{r}}{\sigma_{\text{down}}} \cdot \sqrt{252},
+\quad \text{where} \quad
+\sigma_{\text{down}} = \sqrt{\frac{1}{T} \sum_{t=1}^{T} \min(r_t, 0)^2}.
+\end{equation}
+The target return is zero. This metric is more informative than the Sharpe ratio
+for strategies that exhibit asymmetric return distributions, as it does not
+penalise upside volatility.
+
+\paragraph{Maximum Drawdown (MDD)}
+Maximum Drawdown (MDD) captures the largest peak-to-trough decline in cumulative portfolio value over the evaluation period
+\begin{equation}
+\mathrm{MDD} = \max_{t \in [1,T]} \left( \max_{s \in [1,t]} V_s - V_t \right),
+\end{equation}
+where $V_t$ is the portfolio value at time $t$. Unlike VaR and ES, which are distributional measures, MDD is path-dependent—it reflects the worst sustained loss a portfolio actually experienced, regardless of recovery. A system that recovers quickly from small losses but occasionally suffers deep, prolonged drawdowns may appear acceptable under VaR but reveal fragility through MDD.
+
+Together, these metrics allow system robustness to be assessed economically. PnL measures value creation, VaR and ES characterise tail risk at different levels of severity, and MDD captures path-dependent worst-case exposure. This multi-metric approach follows \cite{baviskar2025robust}, who argues that adversarial robustness evaluations in finance must move beyond classification accuracy toward economic risk quantification.
+
+\subsection{General AML Frameworks}
+The NIST taxonomy of adversarial machine learning provides a systematic classification of threats along three axes: attack stage (training-time vs. inference-time), attacker goal (targeted vs. untargeted), and attack capability — encompassing evasion, poisoning, privacy extraction, and abuse attacks \cite{vassilev2023nist}. Broader survey work further emphasises that vulnerabilities are not confined to model weights alone but extend across data pipelines, human operators, and downstream decision processes \cite{pelekis_adversarial_2025-1}. In finance, these concerns map directly onto established notions of model risk and operational risk: even small, carefully crafted perturbations at one point in a pipeline can propagate into material economic consequences at another.
+
+\subsection{Finance-Specific Adversarial Evidence}
+Empirical research confirms that these vulnerabilities are not theoretical abstractions — they produce measurable economic harm across both numeric and semantic financial modalities. In structured numeric domains, \cite{fursov_adversarial_2021} show that inserting a small number of synthetic transactions into a sequence is sufficient to cause fraud detection models to produce false negatives under realistic black-box assumptions, meaning that an attacker need not understand the model's internals to evade it. \cite{goldblum_adversarial_2021} demonstrate a complementary vulnerability in high-frequency trading, where cost-constrained perturbations to order-book inputs — designed to be financially feasible for an attacker to execute — degrade both profitability and risk metrics under realistic microstructure constraints. These findings extend beyond classification: \cite{baviskar2025robust} shows that models appearing robust under standard accuracy metrics may nonetheless produce unacceptable VaR and ES exposure when evaluated under adversarial stress, reinforcing the need for the economic evaluation framework defined above.
+
+The vulnerability is not limited to static prediction models. In sequential decision-making settings, \cite{buehler2020deephedging} demonstrate that RL agents trained for derivatives hedging are susceptible to strategically perturbed price paths, where an adversary manipulates the environment rather than the model inputs. Adversarial robustness research in time-series forecasting further confirms that correlated financial series are sensitive to structured perturbations, with adversarial multivariate modelling \cite{xu2024mts, chen_diversity_2024-1} and randomised smoothing techniques both revealing significant degradation under attack. Collectively, this evidence establishes that adversarial perturbations in financial settings are economically material — they do not merely reduce accuracy scores but alter the risk profile of the systems that rely on them.
+
+\section{Robust Aggregation: From Byzantine Consensus to Trust-Weighted Coordination} \label{sec:robust-agg}
+
+While the adversarial evidence reviewed above focuses on attacks against individual models, a parallel body of research investigates whether robustness can be achieved at the level of how multiple models or agents are combined --- through aggregation rules, redundancy, and architectural design rather than through hardening any single component.
+
+The most developed line of this work appears in robust federated learning (FL). In FL, multiple clients train local models on their own data and submit updates to a central server for aggregation \cite{pmlr-v54-mcmahan17a}. If some clients are malicious---submitting poisoned updates designed to corrupt the global model---the aggregation rule must be robust enough to produce a reliable result despite these contributions. This threat model is formalised under Byzantine fault assumptions, where up to 
+$f$ of $n$ participants may behave arbitrarily \cite{lamport1982byzantine}. Systematic reviews of robust FL identify three broad categories of defence: regularisation-based methods that constrain update magnitudes, robust optimisers that replace standard averaging with outlier-resistant alternatives, and aggregation algorithms that explicitly detect or down-weight suspicious contributions \cite{uddin_systematic_2025, ahmad_enhancing_2025-1}. Recent algorithmic work has advanced each category. \cite{allouah_fixing_2023} introduce a nearest-neighbour mixing strategy that adapts robust aggregation to settings where clients' data distributions are genuinely heterogeneous --- an important distinction, since legitimate statistical differences between clients can otherwise be mistaken for adversarial behaviour. \cite{musa_fedcwa_nodate} propose credibility-weighted aggregation (FedCWA), which scores each client's reliability using a proxy dataset and weights their contributions accordingly, achieving Byzantine resilience without discarding potentially useful updates from unusual but honest participants. \cite{xu2025layer} further refine this direction with layer-adaptive sparsified aggregation, which applies different robustness strategies to different layers of a neural network based on their sensitivity to poisoning.
+
+The conceptual insight shared across these methods --- that robustness emerges from how signals are combined rather than from perfecting any individual signal --- has a deeper foundation in distributed systems theory. Byzantine fault tolerance (BFT), introduced by \cite{lamport1982byzantine} and made practical by \cite{castro1999pbft}, guarantees that a distributed system continues to operate correctly even when a bounded number of its nodes fail arbitrarily --- sending incorrect, contradictory, or malicious messages. The key mechanism is redundancy and consensus: if sufficiently many independent nodes agree on an output, the system can be confident that the output is correct despite the presence of compromised nodes. \cite{devadoss_byzantine_2025} explicitly adapt this principle to AI safety, proposing that AI systems should be constructed from multiple heterogeneous modules --- each implementing the same function via different methods --- coordinated through consensus protocols. Their argument is that the same logic that protects distributed databases from Byzantine nodes can protect AI systems from unreliable or adversarially compromised components.
+
+In financial contexts specifically, trust-weighted aggregation has been applied to stablecoin reserve design, where heterogeneous agents submit signals about reserve adequacy and a central mechanism weights these signals by each agent's observed behavioural reliability \cite{you_stablecoin_2026}. Under adversarial stress testing --- where a fraction of agents deliberately submit misleading signals --- trust-weighted aggregation significantly reduces peg deviation compared to unweighted averaging. This result demonstrates that the aggregation-level robustness principles developed in FL and BFT research translate into measurable economic outcomes in financial multi-agent settings.
+
+For this thesis, the key takeaway from this literature is threefold. First, robustness can emerge from structural redundancy and diversity rather than solely from improving individual models. Second, the aggregation or arbitration mechanism --- how conflicting signals are combined --- is itself a critical design variable. Third, existing work in this area is predominantly focused on training-time robustness (aggregating gradient updates in FL) or on domain-agnostic system design (BFT for generic distributed services). The application of these principles to inference-time decision arbitration in cross-modal financial AI systems --- where a semantic channel and a numeric channel may disagree due to adversarial manipulation of one modality --- remains, to the best of our knowledge, unexplored. This gap motivates the C-Gate mechanism developed in this thesis.
+
+\section{Heterogeneous Ensembles and Agentic Safety} \label{sec:ensembles-safety}
+
+Ensemble learning has long been recognised as a means of improving predictive performance, but more recent work reveals that the \textit{diversity} of an ensemble --- not merely its size --- is a critical determinant of adversarial robustness. \cite{chen_diversity_2024-1} demonstrate this with their Ensemble Adversarial Diversity Supporting Robustness (EADSR) framework, which trains ensemble members to produce explicitly differentiated predictions on non-maximal classes. The result is that adversarial examples crafted against one member transfer less effectively to others, because the models fail in uncorrelated ways. This finding is consistent with broader theoretical work showing that adversarial vulnerability in ensembles scales with the degree of error correlation across members --- when models make similar mistakes, attacking one effectively attacks all \cite{pang_improving_2019, xu2023featuresqueeze}. Beyond empirical evidence, provable aggregation schemes reinforce this point at a formal level. \cite{zhang2023endpca} propose EndPCA, which uses ensemble principal component analysis with convergence-guaranteed robust aggregation to defend against data poisoning, while \cite{rezaei2022runoff} introduce a run-off election mechanism that provides certified resistance under bounded poisoning assumptions. Together, these results establish that how models are combined --- the aggregation topology and diversity strategy --- can be as important for robustness as how any individual model is trained.
+
+A parallel line of research examines safety in multi-agent LLM systems, where the interaction topology introduces vulnerabilities that do not exist in single-agent deployments. \cite{kavathekar2025tamas} benchmark adversarial risks across multi-agent LLM configurations in the TAMAS framework, covering six attack types including impersonation and Byzantine-style adversarial behaviour. Their results show high attack success rates, particularly when agents can influence one another through shared message channels --- a structural vulnerability arising from the system's communication topology rather than from any individual model's weakness. In financial domains specifically, \cite{yang_finvault_2026} evaluate execution-grounded LLM agents in FinVault, a benchmark comprising 31 sandboxed financial scenarios with over 100 documented vulnerabilities. They find that agents remain susceptible to prompt injection and authority bypass even when guardrails are applied, indicating that model-level safety mechanisms are insufficient when the agent operates within a complex workflow. \cite{chen_standard_2025} argue that this insufficiency is compounded by evaluation practices that prioritise accuracy over risk, proposing a safety-aware evaluation framework in which financial agents are judged by how safely they fail rather than solely by how well they perform. \cite{gehrmann2025risks} reinforces this concern by showing that domain-specific content risks in financial services --- such as misleading investment advice or regulatory non-compliance --- frequently evade generic LLM safeguards not designed for financial contexts.
+
+At the governance level, \cite{kurshan_agentic_2025} propose a layered oversight architecture --- the Agentic Regulator --- in which monitoring and compliance agents operate at the model level, the firm level, and the regulatory level. Their framework reflects a growing recognition that safety in agentic AI cannot be achieved by any single mechanism but requires coordinated structural oversight across multiple layers of the system.
+
+Collectively, this literature establishes two points that are central to the present thesis. First, multi-agent and cross-modal systems introduce structural vulnerabilities that are distinct from --- and often invisible to --- model-level defences. Second, robustness is materially influenced by system topology, ensemble diversity, and aggregation design. These findings motivate an architectural approach to fault tolerance in which the arrangement and arbitration of heterogeneous components is treated as a first-class design variable, rather than an afterthought layered on top of individually hardened models.
+
+\section{Synthesis: Positioning the Thesis Within the Literature}
+
+The preceding sections have surveyed three bodies of work --- aggregation-level
+robustness, heterogeneous ensembles and agentic safety, and finance-specific
+adversarial machine learning --- each of which contributes partial solutions to
+the problem of robustness in heterogeneous financial AI. This section synthesises
+these contributions, identifies their shared limitations, and positions the
+present thesis relative to the state of the art.
+
+\subsection{From Training-Time Aggregation to Inference-Time Arbitration}
+
+The robust aggregation mechanisms reviewed in Section~\ref{sec:robust-agg} share
+a common limitation: they are predominantly designed for \textit{training-time}
+robustness. FL aggregation rules operate over the gradient updates submitted during
+model training, not over action signals produced during inference. BFT-inspired AI
+architectures remain domain-agnostic and do not address the specific challenge of
+arbitrating between heterogeneous modalities --- such as a semantic channel and a
+numeric channel --- in real-time decision settings. The stablecoin work of
+\cite{you_stablecoin_2026} is the closest existing analogue to inference-time
+trust-weighted arbitration in a financial context, but it operates within a single
+domain (decentralised finance reserves) and does not involve cross-modal reasoning.
+The present thesis extends this line of work by applying aggregation-level robustness
+principles to \textit{inference-time cross-modal arbitration} in financial trading,
+where the signals being combined originate from fundamentally different data types
+and model classes.
+
+
+\subsection{From Ensemble Diversity to Cross-Modal Diversity}
+
+The ensemble robustness literature reviewed in Section~\ref{sec:ensembles-safety}
+provides a second foundation. In financial time-series settings,
+\cite{qiao2025multiagent} show that multi-agent adversarial architectures outperform
+single models under volatile conditions, confirming that heterogeneous agent
+populations offer practical robustness benefits.
+
+The limitation of this literature, from the perspective of the present thesis, is
+twofold. First, the diversity approaches reviewed operate within a single modality:
+multiple image classifiers, or multiple time-series forecasters. None addresses
+diversity across fundamentally different modalities, such as a text-based semantic
+channel and a price-based numeric channel. Second, the ensemble defences optimise
+for predictive accuracy or certified robustness against poisoning, not for economic
+fault containment --- they do not ask whether a system's risk profile (measured in
+VaR, expected shortfall, or drawdown) degrades gracefully under attack
+\cite{baviskar2025robust}. The proposed architectural framework generalises the
+diversity principle from intra-modal ensemble diversity to \textit{inter-modal
+architectural diversity}, and evaluates robustness in economic terms rather than
+solely through classification metrics.
+
+\subsection{From Model-Level Attacks to System-Level Fragility}
+
+The finance-specific adversarial studies reviewed in Section~\ref{sec:adv-ml} share
+a critical structural limitation: they evaluate adversarial robustness at the level
+of individual models or single-agent systems. They ask whether \textit{a model} can
+withstand perturbation, not whether \textit{a system of interacting models} can
+contain the damage when one component is compromised. The distinction matters because
+modern financial AI architectures --- such as FinRL-DeepSeek \cite{benhenda2025finrl},
+which tightly couples LLM-derived sentiment with RL trading execution --- create
+cross-modal dependencies in which a successful attack on the semantic channel
+propagates directly into trading decisions without any intermediate verification.
+The present thesis addresses this gap by treating the \textit{system topology} ---
+how components are connected and how their outputs are arbitrated --- as the primary
+object of robustness design.
+
+
+\subsection{From Agent-Level Guardrails to Architectural Fault Containment}
+
+The evaluative and governance frameworks reviewed in
+Section~\ref{sec:ensembles-safety} provide the context within which the
+architectural framework proposed in this thesis should be understood. The
+layered oversight model of \cite{kurshan_agentic_2025} distinguishes
+model-level, firm-level, and regulatory-level controls; the architecture
+developed in subsequent chapters maps onto this hierarchy, with an
+inference-time arbitration mechanism operating at the model level and
+rule-based risk constraints operating at the firm level.
+
+However, neither the safety benchmarks nor the governance frameworks prescribe
+concrete architectural mechanisms for detecting and containing cross-modal
+inconsistency at inference time. TAMAS \cite{kavathekar2025tamas} and FinVault
+\cite{yang_finvault_2026} measure vulnerability but do not propose structural
+fixes. The Agentic Regulator \cite{kurshan_agentic_2025} operates at a
+conceptual governance level without specifying how inter-modal disagreement
+should be detected or resolved within a trading system. The present thesis
+occupies this gap: it proposes and evaluates a specific architectural
+mechanism for translating the governance aspiration of layered oversight into
+a concrete, measurable inference-time arbitration layer.
+
+
+
+\subsection{Summary of Identified Gaps}
+
+Across the four bodies of literature surveyed, a consistent pattern emerges. Each
+contributes valuable robustness mechanisms --- aggregation rules, ensemble
+diversity, adversarial evaluation, agent-level guardrails --- but each operates
+within a bounded scope that leaves the following gaps unaddressed:
+
+\begin{enumerate}
+    \item \textbf{Cross-modal scope.} Existing robustness mechanisms predominantly
+    operate within a single modality (numeric or semantic). No prior framework
+    provides inference-time arbitration across heterogeneous modalities in a
+    financial decision system.
+
+    \item \textbf{Inference-time focus.} The majority of aggregation-level and
+    Byzantine-resilient defences target training-time robustness. Inference-time
+    cross-modal inconsistency --- where a deployed system receives conflicting
+    signals from different channels --- is not systematically addressed.
+
+    \item \textbf{Economic evaluation.} Adversarial robustness is predominantly
+    evaluated through classification accuracy or prediction error. Financially
+    grounded metrics --- VaR, expected shortfall, maximum drawdown --- are rarely
+    used as primary evaluation criteria for architectural robustness.
+
+    \item \textbf{Architectural mechanism.} Governance frameworks advocate for
+    layered oversight, but do not specify concrete detection and containment
+    mechanisms at the system level. Safety benchmarks measure vulnerability but
+    do not propose structural remedies.
+\end{enumerate}
+
+The proposed architectural framework, and specifically its C-Gate, is designed
+to address these four gaps simultaneously: it provides cross-modal divergence
+detection at inference time, evaluated through economic risk metrics, within a
+concrete architectural mechanism that translates governance principles into
+operational system design. The following chapter formalises this architecture and
+its components.
+
+\section{Novelty Positioning}
+
+This thesis contributes to closing this gap by introducing the Robust Trinity
+architecture. The core novelty lies not in any individual component --- LLM-based
+analysis, RL-based execution, and rule-based risk management are each
+well-established --- but in their deliberate architectural separation and
+coordination through a C-Gate that performs cross-modal
+divergence assessment at inference time. The C-Gate treats disagreement between
+the semantic and numeric channels as a first-class safety signal: when two
+structurally independent reasoning systems reach incompatible conclusions, the
+system defaults to caution rather than proceeding based on a potentially
+compromised input.
+
+This design draws on three principles established in the surveyed literature and
+adapts each to a context not previously addressed. From the BFT and FL literature,
+it borrows the principle that no single component should be fully trusted and that
+robustness emerges from structured arbitration over redundant signals
+\cite{castro1999pbft, devadoss_byzantine_2025, musa2025fedcwa}. From the ensemble robustness literature,
+it borrows the principle that diversity across components reduces correlated failure,
+but generalises this from intra-modal ensemble diversity to inter-modal architectural
+diversity \cite{chen2024diversity, pang_improving_2019}. From the financial risk evaluation literature,
+it borrows the principle that robustness must be measured economically --- through
+VaR, expected shortfall, and drawdown --- rather than solely through prediction
+accuracy \cite{baviskar2025robust, chen_standard_2025}. To the best of our knowledge, no prior
+framework integrates these three principles into a unified architectural mechanism
+for inference-time fault containment in heterogeneous financial AI.
+
+The following chapter formalises this architecture, defines the divergence metric
+and the decision policy of the C-Gate, and describes the experimental setup used to
+evaluate the Trinity's robustness against model-centric and fusion-based baselines
+under controlled adversarial injection.

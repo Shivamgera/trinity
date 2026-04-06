@@ -1,0 +1,75 @@
+\chapter{Introduction} \label{cha:introduction}
+\pagestyle{plain}
+
+Financial Artificial Intelligence (AI) systems are undergoing a structural transformation. Over the last decade, financial institutions have shifted from isolated, model-centric analytics toward heterogeneous and increasingly agentic systems that integrate deep learning, gradient-boosted trees, probabilistic models, reinforcement learning (RL), and large language models (LLMs) within shared production pipelines \cite{saha2025genai}. Recent surveys indicate that major banks and asset managers are actively deploying or piloting LLM-based systems across front-, middle-, and back-office processes, motivated by gains in automation and semantic reasoning over unstructured data \cite{saha2025genai, nie_survey_2024}. At the same time, risk analyses warn that generative AI introduces new operational and systemic vulnerabilities \cite{gehrmann2025risks}.
+
+Recent research increasingly reflects this convergence — both of input modalities (numeric market data alongside unstructured text) and of model types — within financial decision-making. \cite{benhenda2025finrl} demonstrates a concrete instance of this trend with FinRL-DeepSeek, which integrates LLM-derived sentiment and risk scores directly into a risk-sensitive RL trading agent, showing measurable performance effects from coupling semantic inputs with numeric execution on Nasdaq-100 equities. Multi-agent approaches push this further: \cite{dwarakanath_abides-economist_2025} model macroeconomic systems as populations of heterogeneous learning agents interacting within shared environments, while \cite{kratsios_generative_2025} embed adversarial learning within multi-agent market dynamics to approximate competitive equilibria under strategic interaction. Evaluation frameworks are evolving accordingly — \cite{yang_finvault_2026} benchmark execution-grounded LLM agents under realistic financial workflows and attack scenarios, revealing persistent vulnerabilities even when guardrails are applied.
+
+Collectively, these developments indicate that modern financial AI is multi-modal (text, time series, structured transactions), multi-agent, and distributed across infrastructures and governance layers. This heterogeneity offers diversification benefits but also expands the attack surface. When multiple components consume overlapping or coupled signals, manipulation of one modality can propagate across the system. Agentic systems compound this risk by introducing feedback loops in which models modify prompts, tools, or state, potentially amplifying errors rather than containing them \cite{kurshan_agentic_2025, yang_finvault_2026}. This thesis argues that robustness in such environments cannot be treated as a property of individual models alone. Instead, resilience must be designed at the architectural level.
+
+The tight coupling of semantic and numeric reasoning in financial AI creates a structural vulnerability that existing defenses do not address. Consider a system where an LLM reads news headlines to assess market sentiment, and an RL agent uses that assessment alongside price data to execute trades. If an attacker publishes fabricated news---for example, a fake earnings revision---the LLM may shift its recommendation, and the RL agent, trusting that input, may execute a harmful trade \cite{yang_finvault_2026, 10.1093/rof/rfac058}. No individual component failed at its own task; the failure is architectural.
+
+This type of cross-modal vulnerability is not hypothetical. Adversarial machine learning research demonstrates that financial models are susceptible to carefully crafted perturbations across both numeric and semantic inputs. In numeric domains, small modifications to transaction sequences can induce fraud misclassification \cite{fursov_adversarial_2021}, and cost-constrained perturbations to order-book features can significantly degrade trading performance \cite{goldblum_adversarial_2021}. Models that appear robust under standard accuracy metrics may still incur unacceptable tail-risk exposure when evaluated economically under adversarial stress \cite{baviskar2025robust}. In semantic domains, LLM-based systems that ingest news, filings, and social media are exposed to prompt injection, impersonation, and indirect manipulation \cite{vassilev2023nist}. Multi-agent LLM benchmarks report high attack success rates under impersonation and adversarial coordination \cite{kavathekar2025tamas}, and execution-grounded evaluations in finance reveal persistent vulnerabilities even when protective guardrails are applied \cite{yang_finvault_2026}.
+
+These vulnerabilities become structurally dangerous when the semantic and numeric components are tightly fused. Architectures such as FinRL-DeepSeek directly incorporate LLM-derived sentiment into RL trading policies \cite{benhenda2025finrl}. Under benign conditions, this improves performance. Under adversarial conditions, it means that manipulation of the text channel — which is relatively cheap to attack — propagates directly into trading decisions, with no intermediate verification or containment mechanism.
+
+Existing defences do not address this gap. Adversarial training improves the robustness of individual models but treats each component in isolation rather than securing the system as a whole \cite{madry_towards_2019}. Robust aggregation methods operate at training time in distributed settings and do not apply to inference-time decisions \cite{allouah_fixing_2023}. Agent-level guardrails filter outputs within a single modality but do not verify whether independently derived signals---one semantic, one numeric---are consistent with each other \cite{xiang_alrphfs_2025}. The governance literature increasingly frames financial AI as a complex adaptive system in which risks propagate across interacting components \cite{kurshan_agentic_2025, chen_standard_2025}, yet no existing work translates this framing into a concrete mechanism for cross-modal fault containment at inference time.
+
+
+% It can be nice to include figures already in this first chapter. A picture of a pipe (but not a pipe) is given in Figure \ref{fig:pipe}.
+
+% \begin{figure} [h]
+% \centering
+% \includegraphics[scale = 0.8]{pipe.jpg}
+% \caption{A Picture of a Pipe}
+%  \label{fig:pipe}
+% \end{figure}
+\section{Problem}
+The problem this thesis addresses is that current financial AI systems have no structural mechanism to detect when their components disagree due to adversarial interference. When a language model assessing news sentiment and a reinforcement learning agent executing trades reach conflicting conclusions, existing systems have no way to identify this conflict, judge whether it signals an attack, or respond proportionally. This means that a localised attack on a single input---a fabricated headline, a manipulated data feed---can propagate undetected into portfolio-level losses. Defences exist for individual models and for training-time aggregation, but none operates at the point where diverse signals are combined into a trading decision.
+
+
+\section{Research Questions}
+
+This thesis investigates the following main research question:
+
+\emph{How can structural fault tolerance be designed and evaluated in
+heterogeneous financial AI systems to improve robustness under adversarial
+signal injection?}
+
+To address this, the thesis designs and evaluates an architectural framework
+that places a cross-modal arbitration layer between independently operating
+reasoning components and trade execution, enabling the system to degrade
+gracefully under partial compromise rather than failing silently. The main
+research question is decomposed into three sub-questions:
+
+\begin{description}
+  \item[\textbf{SRQ1}] \emph{How should semantic, numeric, and symbolic
+    components be decomposed and coordinated to reduce correlated failure?}
+    That is, what architectural separation ensures that compromise of one
+    reasoning channel does not automatically compromise the others?
+
+  \item[\textbf{SRQ2}] \emph{How can cross-modal divergence be defined and
+    calibrated as a detection mechanism?} Specifically, what metric over
+    heterogeneous agent outputs reliably distinguishes adversarial
+    inconsistency from benign disagreement, and how should its activation
+    thresholds be set?
+
+  \item[\textbf{SRQ3}] \emph{Does a structurally heterogeneous architecture
+    with cross-modal arbitration provide measurable robustness improvements
+    compared to single-agent and tightly fused alternatives under simulated
+    adversarial conditions?}
+\end{description}
+
+SRQ1 and SRQ2 are addressed through the design and formalisation of the
+proposed architectural framework. SRQ3 is addressed through comparative
+evaluation in a controlled simulation environment against ablated and
+baseline configurations.
+
+
+\section{Delimitations}
+\label{sec:delimitations}
+This thesis is scoped as an architectural and experimental contribution by a single researcher within a one-semester timeframe. The investigation is limited to the domain of financial trading — specifically, equity trading decisions under adversarial conditions \cite{10.1145/3490354.3494366}. Other financial AI applications, such as credit risk scoring, fraud detection, insurance underwriting, or regulatory reporting, involve different data modalities, latency requirements, and failure modes, and are not addressed here. Within trading, the contribution focuses on three elements: the architectural design of the proposed framework, the formalisation and calibration of the divergence-based metrics, and simulation-based comparative evaluation against single-agent and fused baselines under controlled adversarial injection. The evaluation uses simulated market environments rather than live or historical production systems, which provides experimental control over adversarial scenarios but does not capture the full complexity of real-world deployment — including network latency, partial fills, regulatory interaction, and evolving adversary behaviour.
+
+Several related areas are deliberately excluded. The thesis does not train new foundation models or fine-tune large language models; the semantic reasoning component of the proposed system (referred to as the Analyst) uses an existing pre-trained LLM with prompt-based adaptation, which is appropriate given the architectural rather than model-centric nature of the contribution. The cross-modal arbitration mechanism (referred to as the Consistency Gate, or C-Gate) draws conceptual inspiration from Byzantine fault tolerance, but full implementation of distributed consensus protocols such as Practical Byzantine Fault Tolerance (PBFT) \cite{castro1999pbft} is not undertaken---the architecture operates as a single-system inference pipeline, not a distributed network, making such protocols unnecessary. Similarly, the thesis does not provide cryptographic guarantees, formal verification of safety properties, or regulatory certification. These are important for production deployment but fall outside the scope of a design-and-evaluation study. The claims made are therefore empirical and architectural: that the proposed topology improves measurable robustness metrics under simulated adversarial conditions, not that it provides provable or deployment-ready guarantees.
+% \subsection{A Subsection}
+% Here is the first subsection of the first section.
