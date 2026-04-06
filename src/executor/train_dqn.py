@@ -155,7 +155,8 @@ class DQNValCheckpointCallback(BaseCallback):
         normalizer: StaticNormalizer | None,
         run_dir: Path,
         eval_freq: int = 2048,
-        patience: int = 10,
+        patience: int = 25,
+        min_timesteps: int = 30_000,
         reward_type: str = "log_return",
         verbose: int = 0,
     ):
@@ -164,6 +165,7 @@ class DQNValCheckpointCallback(BaseCallback):
         self._run_dir = run_dir
         self._eval_freq = eval_freq
         self._patience = patience
+        self._min_timesteps = min_timesteps
         self._reward_type = reward_type
         self._no_improve_count = 0
         self.best_sharpe: float = -np.inf
@@ -236,10 +238,11 @@ class DQNValCheckpointCallback(BaseCallback):
                 f"  >> No improvement ({self._no_improve_count}/{self._patience})"
             )
 
-        # Early stopping
-        if self._no_improve_count >= self._patience:
+        # Early stopping (only after grace period to let exploration finish)
+        if self.num_timesteps >= self._min_timesteps and self._no_improve_count >= self._patience:
             logger.info(
-                f"Early stopping: no val improvement for {self._patience} eval periods. "
+                f"Early stopping: no val improvement for {self._patience} eval periods "
+                f"(after {self._min_timesteps} grace). "
                 f"Best Sharpe={self.best_sharpe:.3f} at step {self.best_step}."
             )
             return False
@@ -298,7 +301,7 @@ def train_dqn(
     gamma: float = 0.95,
     buffer_size: int = 50_000,
     learning_starts: int = 1_000,
-    exploration_fraction: float = 0.4,
+    exploration_fraction: float = 0.10,
     exploration_initial_eps: float = 1.0,
     exploration_final_eps: float = 0.05,
     target_update_interval: int = 1_000,
@@ -308,7 +311,8 @@ def train_dqn(
     tau: float = 1.0,
     net_arch: list[int] | None = None,
     eval_freq: int = 2048,
-    patience: int = 10,
+    patience: int = 25,
+    min_timesteps: int = 30_000,
     reward_type: str = "log_return",
     seed: int = 42,
     use_wandb: bool = True,
@@ -454,6 +458,7 @@ def train_dqn(
         run_dir=run_dir,
         eval_freq=eval_freq,
         patience=patience,
+        min_timesteps=min_timesteps,
         reward_type=reward_type,
     )
 

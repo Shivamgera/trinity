@@ -41,8 +41,9 @@ Get your API key from: https://wandb.ai/authorize
 
 ### 5. Ensure data files are present
 
-The training scripts expect processed data in `data/processed/`:
+The training scripts expect both raw and processed data:
 ```
+data/raw/aapl_ohlcv.parquet
 data/processed/aapl_features.parquet
 data/processed/headlines.json
 data/processed/precomputed_signals.json
@@ -50,7 +51,8 @@ data/processed/precomputed_signals.json
 
 If these files are gitignored, copy them to the cluster:
 ```bash
-scp -r data/processed/ olympus:~/research1/data/processed/
+scp -r data/raw/ olympus:~/trinity/data/raw/
+scp -r data/processed/ olympus:~/trinity/data/processed/
 ```
 
 ## Running Sweeps

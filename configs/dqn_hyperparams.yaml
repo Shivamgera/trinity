@@ -13,7 +13,7 @@ learning_rate: 0.000198        # Same as PPO v4 winner
 gamma: 0.95                    # Same as PPO v4 winner
 buffer_size: 50000             # ~66x episode length
 learning_starts: 1000          # Fill buffer before learning
-exploration_fraction: 0.4      # 40% of training for epsilon decay
+exploration_fraction: 0.10      # 10% of training for epsilon decay
 exploration_initial_eps: 1.0   # Start fully random
 exploration_final_eps: 0.05    # 5% random at end
 target_update_interval: 1000   # Hard target network update every 1k steps
@@ -24,7 +24,8 @@ tau: 1.0                       # Hard target updates (not Polyak)
 
 # Training budget
 total_timesteps: 250000        # 200k-300k range; early stopping should fire sooner
-patience: 10                   # Eval periods without val improvement before stopping
+patience: 25                   # Eval periods without val improvement before stopping
+min_timesteps: 30000           # Grace period — no early stopping before this step
 eval_freq: 2048                # Evaluate on val every 2048 steps (match PPO rollout size)
 
 # Reward

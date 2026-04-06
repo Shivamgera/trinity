@@ -63,7 +63,8 @@ def sweep_train() -> None:
         tau = 1.0
         net_arch = [64, 64]
         eval_freq = 2048
-        patience = 10
+        patience = 25
+        min_timesteps = 30_000
         reward_type = "log_return"
         seed = 42
 
@@ -127,6 +128,7 @@ def sweep_train() -> None:
             run_dir=run_dir,
             eval_freq=eval_freq,
             patience=patience,
+            min_timesteps=min_timesteps,
             reward_type=reward_type,
         )
         wandb_cb = DQNWandbCallback(log_freq=1000)
