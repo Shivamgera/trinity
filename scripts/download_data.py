@@ -22,11 +22,14 @@ def main():
         config = yaml.safe_load(f)
 
     ticker = config["data"]["ticker"]
-    # Download from 2018-07-01 to provide ~252 trading days of warm-up
-    # before 2020-01-01 (warmup split start), which the 252-day rolling
-    # z-score normalization needs for stable statistics.
+    # Download from 2007-01-01 to provide ~500 trading days of warm-up
+    # before 2009-01-01 (warmup split start), which the 252-day rolling
+    # z-score normalization needs for stable statistics.  The extra margin
+    # ensures all 14 technical indicators (longest: MACD slow=26, BB=20,
+    # RSI=14, realized_vol=20) plus the 252-day z-score window are fully
+    # populated well before the warmup period begins.
     print(f"Downloading {ticker} data...")
-    df = yf.download(ticker, start="2018-07-01", end="2024-12-31", auto_adjust=True)
+    df = yf.download(ticker, start="2007-01-01", end="2024-12-31", auto_adjust=True)
 
     # Flatten MultiIndex columns if present (yfinance >= 0.2.31 returns MultiIndex for single ticker)
     if isinstance(df.columns, pd.MultiIndex):
@@ -62,13 +65,13 @@ def main():
     print(f"Raw OHLCV saved to {raw_path}")
 
     # Create split config
-    # Warmup: 2020 (Guardian/Analyst warm-up, not used for RL training)
-    # Train:  2021-2023 (~750 trading days — 3x previous)
+    # Warmup: 2009 (Guardian/Analyst warm-up, not used for RL training)
+    # Train:  2010-2023 (~3,520 trading days — expanded from 756)
     # Val:    Jan-Jun 2024 (early stopping target)
     # Test:   Jul-Dec 2024 (held-out evaluation)
     splits = {
-        "warmup": {"start": "2020-01-01", "end": "2020-12-31"},
-        "train": {"start": "2021-01-01", "end": "2023-12-31"},
+        "warmup": {"start": "2009-01-01", "end": "2009-12-31"},
+        "train": {"start": "2010-01-01", "end": "2023-12-31"},
         "val": {"start": "2024-01-01", "end": "2024-06-30"},
         "test": {"start": "2024-07-01", "end": "2024-12-31"},
     }

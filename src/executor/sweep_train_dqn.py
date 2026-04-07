@@ -57,13 +57,24 @@ def sweep_train() -> None:
         train_freq = cfg.get("train_freq", 4)
         gradient_steps = cfg.get("gradient_steps", 1)
 
+        # ---- Architecture from sweep config ----
+        net_arch_width = cfg.get("net_arch_width", 64)
+        net_arch_depth = cfg.get("net_arch_depth", 2)
+        activation_name = cfg.get("activation_fn", "tanh")
+
+        activation_map = {"tanh": nn.Tanh, "relu": nn.ReLU}
+        activation_fn = activation_map.get(activation_name, nn.Tanh)
+
+        net_arch = [net_arch_width] * net_arch_depth
+
+        # ---- Training budget ----
+        total_timesteps = cfg.get("total_timesteps", 500_000)
+        patience = cfg.get("patience", 25)
+
         # ---- Fixed hyperparameters ----
-        total_timesteps = 250_000
         batch_size = 64
         tau = 1.0
-        net_arch = [64, 64]
         eval_freq = 2048
-        patience = 25
         min_timesteps = 30_000
         reward_type = "log_return"
         seed = 42
@@ -77,7 +88,9 @@ def sweep_train() -> None:
             f"explore_frac={exploration_fraction:.2f}, "
             f"final_eps={exploration_final_eps:.3f}, "
             f"target_update={target_update_interval}, "
-            f"train_freq={train_freq}, grad_steps={gradient_steps}"
+            f"train_freq={train_freq}, grad_steps={gradient_steps}, "
+            f"arch={net_arch_width}x{net_arch_depth} {activation_name}, "
+            f"patience={patience}, timesteps={total_timesteps}"
         )
 
         # ---- Load or compute normalization stats ----
@@ -99,7 +112,7 @@ def sweep_train() -> None:
         # ---- Build DQN model ----
         policy_kwargs = {
             "net_arch": net_arch,
-            "activation_fn": nn.Tanh,
+            "activation_fn": activation_fn,
         }
 
         model = DQN(

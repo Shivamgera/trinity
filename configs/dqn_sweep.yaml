@@ -1,6 +1,6 @@
 # W&B Hyperparameter Sweep Configuration for DQN Executor
-# Bayesian optimization over DQN-specific hyperparameters.
-# Architecture fixed at 2x64 Tanh to match PPO frozen (v4).
+# Phase 2, Sweep v2: Expanded data (3,522 training days, 2010-2023).
+# Architecture unlocked as sweep parameter.
 #
 # Usage:
 #     wandb sweep configs/dqn_sweep.yaml
@@ -17,45 +17,47 @@ metric:
   name: val/sharpe_ratio
   goal: maximize
 
-# 50 runs: DQN has more hyperparameters to explore than PPO
-run_cap: 50
+# 80 runs: larger sweep for expanded parameter space
+run_cap: 80
 
 parameters:
-  # Learning rate: wider range than PPO since DQN dynamics differ
+  # ---- Core hyperparameters ----
+
+  # Learning rate: wider range
   learning_rate:
     distribution: log_uniform_values
-    min: 1.0e-4
-    max: 1.0e-3
+    min: 5.0e-5
+    max: 2.0e-3
 
-  # Discount factor
+  # Discount factor: wider for longer training data
   gamma:
     distribution: uniform
     min: 0.90
-    max: 0.99
+    max: 0.999
 
-  # Replay buffer size: too small = not enough diversity, too large = stale samples
+  # Replay buffer size
   buffer_size:
-    values: [10000, 25000, 50000]
+    values: [10000, 25000, 50000, 100000]
 
   # Steps of random play before learning begins
   learning_starts:
-    values: [500, 1000, 2000]
+    values: [500, 1000, 2000, 5000]
 
   # Fraction of training for epsilon decay (1.0 -> final_eps)
   exploration_fraction:
     distribution: uniform
     min: 0.05
-    max: 0.20
+    max: 0.60
 
   # Final epsilon after exploration decay
   exploration_final_eps:
     distribution: uniform
     min: 0.01
-    max: 0.10
+    max: 0.15
 
   # Steps between target network hard updates
   target_update_interval:
-    values: [500, 1000, 2000]
+    values: [500, 1000, 2000, 5000]
 
   # Train every N env steps
   train_freq:
@@ -65,14 +67,31 @@ parameters:
   gradient_steps:
     values: [1, 4]
 
+  # ---- Architecture (unlocked) ----
+
+  # Network width (all hidden layers same width)
+  net_arch_width:
+    values: [64, 128, 256]
+
+  # Number of hidden layers
+  net_arch_depth:
+    values: [2, 3]
+
+  # Activation function
+  activation_fn:
+    values: ["tanh", "relu"]
+
+  # ---- Training budget ----
+  total_timesteps:
+    value: 500000
+
+  patience:
+    values: [15, 25, 35]
+
 # Fixed hyperparameters (hardcoded in sweep_train_dqn.py):
-#   total_timesteps:  250,000 (budget cap; early stopping fires sooner)
-#   patience:         25 (eval periods without val improvement)
-#   min_timesteps:    30,000 (grace period — no early stopping before this)
-#   eval_freq:        2048 (steps between val evaluation)
 #   batch_size:       64
 #   tau:              1.0 (hard target updates)
-#   net_arch:         [64, 64]
-#   activation_fn:    Tanh
 #   reward_type:      log_return
 #   seed:             42
+#   eval_freq:        2048
+#   min_timesteps:    30,000 (grace period)
