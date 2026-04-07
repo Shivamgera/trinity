@@ -253,27 +253,47 @@ def sweep_train() -> None:
         learning_rate = cfg.get("learning_rate", 3e-4)
         gamma = cfg.get("gamma", 0.99)
         ent_coef = cfg.get("ent_coef", 0.01)
+        gae_lambda = cfg.get("gae_lambda", 0.95)
+        clip_range = cfg.get("clip_range", 0.2)
         inaction_penalty = cfg.get("inaction_penalty", 0.0)
-        dsr_eta = cfg.get("dsr_eta", 0.008)
+        reward_type = cfg.get("reward_type", "log_return")
+        norm_reward = cfg.get("norm_reward", False)
 
-        # Fixed hyperparameters
-        n_steps = 4096            # fixed from sweep v1 winner (cosmic-sweep-4)
-        batch_size = 64
-        n_epochs = 10
-        gae_lambda = 0.95
-        clip_range = 0.2
-        n_envs = 8
-        total_timesteps = 200_000  # upper bound; early stopping usually fires sooner
-        patience = 8               # stop after 8 rollouts without val improvement
+        # Training dynamics
+        n_steps = cfg.get("n_steps", 2048)
+        batch_size = cfg.get("batch_size", 64)
+        n_epochs = 10                  # fixed
+        n_envs = 8                     # fixed
+        total_timesteps = cfg.get("total_timesteps", 1_000_000)
+        patience = cfg.get("patience", 12)
+
+        # Architecture from sweep config
+        net_arch_width = cfg.get("net_arch_width", 64)
+        net_arch_depth = cfg.get("net_arch_depth", 2)
+        activation_name = cfg.get("activation_fn", "tanh")
+
+        # Map activation name to torch module
+        from torch import nn as _nn
+        activation_map = {"tanh": _nn.Tanh, "relu": _nn.ReLU}
+        activation_fn = activation_map.get(activation_name, _nn.Tanh)
+
+        # Build net_arch: same width for all layers, separate pi/vf heads
+        layer_sizes = [net_arch_width] * net_arch_depth
+        net_arch = dict(pi=layer_sizes, vf=layer_sizes)
+
+        # DSR eta only used if reward_type == "dsr"
+        dsr_eta = cfg.get("dsr_eta", 0.008)
 
         run_dir = Path("experiments/executor/sweep") / run.id
         run_dir.mkdir(parents=True, exist_ok=True)
 
         logger.info(
             f"Sweep run {run.id}: lr={learning_rate}, n_steps={n_steps}, "
-            f"gamma={gamma}, ent_coef={ent_coef}, dsr_eta={dsr_eta} (fixed), "
-            f"inaction_penalty={inaction_penalty}, timesteps={total_timesteps}, "
-            f"patience={patience}"
+            f"gamma={gamma}, ent_coef={ent_coef}, gae_lambda={gae_lambda}, "
+            f"clip_range={clip_range}, batch_size={batch_size}, "
+            f"arch={net_arch_width}x{net_arch_depth} {activation_name}, "
+            f"inaction_penalty={inaction_penalty}, norm_reward={norm_reward}, "
+            f"reward={reward_type}, timesteps={total_timesteps}, patience={patience}"
         )
 
         # Build vectorized training env
@@ -283,12 +303,16 @@ def sweep_train() -> None:
             dsr_eta=dsr_eta,
             inaction_penalty=inaction_penalty,
             random_start=True,
+            reward_type=reward_type,
         )
         vec_env = DummyVecEnv(env_fns)
-        vec_env = VecNormalize(vec_env, norm_obs=False, norm_reward=True, clip_obs=10.0)
+        vec_env = VecNormalize(
+            vec_env, norm_obs=False, norm_reward=norm_reward, clip_obs=10.0
+        )
 
         policy_kwargs = {
-            "net_arch": dict(pi=[64, 64], vf=[64, 64]),
+            "net_arch": net_arch,
+            "activation_fn": activation_fn,
         }
 
         model = PPO(
