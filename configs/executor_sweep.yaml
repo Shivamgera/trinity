@@ -1,14 +1,9 @@
 # W&B Hyperparameter Sweep Configuration for Executor PPO Agent
-# Phase 3, Sweep v5: Expanded data (3,522 training days, 2010-2023).
-# Architecture unlocked as sweep parameter. Wider ranges for regularization.
+# Phase 3, Sweep v6: Expanded data (3,522 training days, 2010-2023).
+# Architecture unlocked. 3-seed evaluation per trial. Reward variants.
+# Gamma fixed at 0.97 (not swept — problem-dependent per supervisor).
 #
-# Key findings from Phase 1 sanity check (4 seeds, old hyperparams):
-#   - 2/4 seeds achieved positive test Sharpe (up to +1.13)
-#   - Best checkpoints are always very early (16k-49k steps)
-#   - High cross-seed variance → need better regularization
-#   - Rapid overfitting after 2-3 rollouts → need higher entropy, patience
-#
-# Training objective — maximize val/sharpe_ratio (from best checkpoint)
+# Training objective — maximize val/sharpe_ratio (mean across 3 seeds)
 
 program: src/executor/sweep_train.py
 method: bayes
@@ -16,92 +11,73 @@ metric:
   name: val/sharpe_ratio
   goal: maximize
 
-# 80 runs: larger sweep for expanded parameter space (architecture + hyperparams)
 run_cap: 80
 
 parameters:
   # ---- Core hyperparameters ----
 
-  # Learning rate: wider range, log-uniform
   learning_rate:
     distribution: log_uniform_values
     min: 1.0e-5
     max: 1.0e-3
 
-  # Discount factor: wider range for longer episodes on expanded data
+  # Gamma FIXED — not a sweep parameter
   gamma:
-    distribution: uniform
-    min: 0.90
-    max: 0.999
+    value: 0.97
 
-  # Entropy bonus: pushed higher to combat overfitting
   ent_coef:
     distribution: log_uniform_values
     min: 1.0e-4
     max: 5.0e-2
 
-  # GAE lambda
   gae_lambda:
     distribution: uniform
     min: 0.90
     max: 0.99
 
-  # PPO clip range
   clip_range:
     values: [0.1, 0.2, 0.3]
 
-  # Rollout length per env (total batch = n_steps * n_envs)
   n_steps:
     values: [1024, 2048, 4096]
 
-  # Minibatch size for gradient updates
   batch_size:
     values: [64, 128, 256]
 
-  # ---- Reward & penalties ----
-
-  # Reward type: log_return only (DSR abandoned)
+  # ---- Reward function (sweep parameter) ----
   reward_type:
-    value: "log_return"
+    values: ["log_return", "sortino", "mean_variance", "cvar"]
 
-  # Inaction penalty: 0 disables it; sweep to see if it helps
   inaction_penalty:
     distribution: log_uniform_values
     min: 1.0e-6
     max: 5.0e-4
 
-  # Reward normalization via VecNormalize
   norm_reward:
     values: [true, false]
 
   # ---- Architecture (unlocked) ----
 
-  # Network width (both pi and vf use same width per layer)
   net_arch_width:
-    values: [64, 128, 256]
+    values: [32, 48, 64, 128, 256]
 
-  # Number of hidden layers
   net_arch_depth:
     values: [2, 3]
 
-  # Activation function
   activation_fn:
     values: ["tanh", "relu"]
 
   # ---- Training budget ----
 
-  # Total timesteps upper bound (early stopping usually fires sooner)
   total_timesteps:
-    value: 1000000
+    value: 100000
 
-  # Patience: rollouts without val improvement before early stop
   patience:
     values: [8, 12, 15]
 
 # Fixed hyperparameters (hardcoded in sweep_train.py):
 #   n_epochs:         10
 #   n_envs:           8
-#   seed:             42
-#   dsr_eta:          unused (log_return reward)
+#   seeds:            [42, 123, 999] (3-seed mean evaluation)
 #   transaction_cost: 0.001
 #   slippage:         0.0005

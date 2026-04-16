@@ -15,6 +15,8 @@ Where:
     R_t = portfolio return at time t
 """
 
+from collections import deque
+
 import numpy as np
 
 
@@ -130,3 +132,95 @@ class LogReturnReward:
             compounding and value estimation.
         """
         return float(np.log1p(portfolio_return))
+
+
+class SortinoReward:
+    """Sortino-based reward: penalises only downside deviation.
+
+    Uses a rolling window of recent returns to estimate the downside
+    standard deviation, then computes an incremental Sortino-like signal:
+
+        reward_t = r_t / max(downside_std, floor)
+
+    This encourages positive returns while only penalising *negative*
+    volatility, unlike Sharpe which penalises all variance equally.
+    Commonly used in risk-aware RL trading (e.g. El-Hajj 2025).
+    """
+
+    def __init__(self, window: int = 60, floor: float = 1e-6) -> None:
+        self.window = window
+        self.floor = floor
+        self._returns: deque[float] = deque(maxlen=window)
+
+    def reset(self) -> None:
+        self._returns.clear()
+
+    def compute(self, portfolio_return: float) -> float:
+        self._returns.append(portfolio_return)
+        if len(self._returns) < 5:
+            return portfolio_return
+        arr = np.array(self._returns)
+        neg = arr[arr < 0]
+        downside_std = float(np.sqrt(np.mean(neg**2))) if len(neg) > 0 else self.floor
+        downside_std = max(downside_std, self.floor)
+        return float(portfolio_return / downside_std)
+
+
+class MeanVarianceReward:
+    """Mean-variance reward: r_t - lambda * r_t^2.
+
+    From Gityforoze (2025) — the classic Markowitz mean-variance
+    objective turned into a per-step RL reward. The quadratic penalty
+    discourages large swings in either direction, promoting smoother
+    equity curves.
+
+    Args:
+        lam: Risk-aversion coefficient. Higher values penalise variance
+             more aggressively. Default 1.0.
+    """
+
+    def __init__(self, lam: float = 1.0) -> None:
+        self.lam = lam
+
+    def reset(self) -> None:
+        pass
+
+    def compute(self, portfolio_return: float) -> float:
+        return float(portfolio_return - self.lam * portfolio_return**2)
+
+
+class CVaRPenalizedReward:
+    """CVaR-penalised log-return: log(1+r_t) - lambda * CVaR_loss.
+
+    From Ahmed (2025). Combines the log-return reward with a running
+    estimate of CVaR (Conditional Value at Risk) at the alpha-percentile,
+    penalising tail losses. CVaR is estimated from a rolling window of
+    recent returns.
+
+    Args:
+        lam: Weight on the CVaR penalty term. Default 0.5.
+        alpha: CVaR percentile (e.g. 0.05 = worst 5%). Default 0.05.
+        window: Rolling window for CVaR estimation. Default 60.
+    """
+
+    def __init__(self, lam: float = 0.5, alpha: float = 0.05, window: int = 60) -> None:
+        self.lam = lam
+        self.alpha = alpha
+        self.window = window
+        self._returns: deque[float] = deque(maxlen=window)
+
+    def reset(self) -> None:
+        self._returns.clear()
+
+    def compute(self, portfolio_return: float) -> float:
+        self._returns.append(portfolio_return)
+        log_ret = float(np.log1p(portfolio_return))
+        if len(self._returns) < 10:
+            return log_ret
+        arr = np.array(self._returns)
+        cutoff = np.percentile(arr, self.alpha * 100)
+        tail = arr[arr <= cutoff]
+        cvar = float(np.mean(tail)) if len(tail) > 0 else 0.0
+        # cvar is negative for losses; penalty = -lam * cvar adds a positive
+        # penalty when cvar is negative (i.e. large losses in the tail)
+        return float(log_ret - self.lam * cvar)
