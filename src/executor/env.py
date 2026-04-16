@@ -31,7 +31,13 @@ import gymnasium as gym
 import numpy as np
 import pandas as pd
 
-from src.executor.rewards import DifferentialSharpeReward, LogReturnReward
+from src.executor.rewards import (
+    CVaRPenalizedReward,
+    DifferentialSharpeReward,
+    LogReturnReward,
+    MeanVarianceReward,
+    SortinoReward,
+)
 
 # Position encoding: maps action index to position value
 ACTION_TO_POSITION = {0: 0.0, 1: 1.0, 2: -1.0}  # flat, long, short
@@ -97,9 +103,7 @@ class TradingEnv(gym.Env):
         # When the C-Gate integration runs the Executor through TradingEnv,
         # it needs to know which calendar date corresponds to each step
         # so it can look up the Analyst's precomputed signal for that date.
-        if isinstance(features, pd.DataFrame) and isinstance(
-            features.index, pd.DatetimeIndex
-        ):
+        if isinstance(features, pd.DataFrame) and isinstance(features.index, pd.DatetimeIndex):
             self._date_index: list[str] = features.index.strftime("%Y-%m-%d").tolist()
         else:
             self._date_index = []
@@ -148,10 +152,16 @@ class TradingEnv(gym.Env):
             self._reward_fn = LogReturnReward()
         elif reward_type == "dsr":
             self._reward_fn = DifferentialSharpeReward(eta=dsr_eta)
+        elif reward_type == "sortino":
+            self._reward_fn = SortinoReward()
+        elif reward_type == "mean_variance":
+            self._reward_fn = MeanVarianceReward()
+        elif reward_type == "cvar":
+            self._reward_fn = CVaRPenalizedReward()
         else:
             raise ValueError(
                 f"Unknown reward_type '{reward_type}'. "
-                f"Expected 'dsr' or 'log_return'."
+                f"Expected 'dsr', 'log_return', 'sortino', 'mean_variance', or 'cvar'."
             )
 
         # State variables (initialized in reset)
@@ -226,9 +236,7 @@ class TradingEnv(gym.Env):
 
         return obs, info
 
-    def step(
-        self, action: int
-    ) -> tuple[np.ndarray, float, bool, bool, dict[str, Any]]:
+    def step(self, action: int) -> tuple[np.ndarray, float, bool, bool, dict[str, Any]]:
         """Execute one trading step.
 
         Args:

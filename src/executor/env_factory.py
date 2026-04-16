@@ -49,7 +49,8 @@ def make_trading_env(
         inaction_threshold: Steps before inaction_penalty activates.
         episode_length: Max steps per episode (None = full split).
         random_start: Randomize episode start position.
-        reward_type: Reward function: "dsr" or "log_return".
+        reward_type: Reward function: "dsr", "log_return", "sortino",
+                     "mean_variance", or "cvar".
 
     Returns:
         A callable ``() -> gym.Env`` that creates a fresh TradingEnv.
@@ -122,7 +123,8 @@ def create_vec_env(
         inaction_threshold: Steps before inaction_penalty activates.
         episode_length: Max steps per episode.
         random_start: Randomize episode start.
-        reward_type: Reward function: "dsr" or "log_return".
+        reward_type: Reward function: "dsr", "log_return", "sortino",
+                     "mean_variance", or "cvar".
 
     Returns:
         List of callables, each returning a fresh TradingEnv.
