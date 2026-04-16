@@ -204,7 +204,6 @@ class DQNValCheckpointCallback(BaseCallback):
                         "val_step/pct_short": metrics["pct_short"],
                         "val_step/step": step,
                     },
-                    step=step,
                 )
         except ImportError:
             pass
@@ -283,7 +282,7 @@ class DQNWandbCallback(BaseCallback):
                         metrics["train/sharpe_ratio"] = compute_sharpe_ratio(
                             recent, annualize=True
                         )
-                    wandb.log(metrics, step=self.num_timesteps)
+                    wandb.log(metrics)
             except ImportError:
                 pass
 
