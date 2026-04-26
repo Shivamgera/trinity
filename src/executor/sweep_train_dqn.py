@@ -21,6 +21,7 @@ from pathlib import Path
 import numpy as np
 import wandb
 from stable_baselines3 import DQN
+from stable_baselines3.common.callbacks import BaseCallback
 from stable_baselines3.common.vec_env import DummyVecEnv
 from torch import nn
 
@@ -38,6 +39,40 @@ from src.executor.train_dqn import (
 )
 
 logger = logging.getLogger(__name__)
+
+# Step offset per seed so W&B x-axis doesn't overlap across sequential seeds
+_SEED_STEP_OFFSETS = {42: 0, 123: 200_000, 999: 400_000}
+
+
+class _SeedDQNWandbCallback(BaseCallback):
+    """Log DQN training metrics with step offset for multi-seed runs."""
+
+    def __init__(self, seed: int, log_freq: int = 1000, verbose: int = 0):
+        super().__init__(verbose=verbose)
+        self.seed = seed
+        self.log_freq = log_freq
+        self._offset = _SEED_STEP_OFFSETS.get(seed, 0)
+        self._portfolio_returns: list[float] = []
+
+    def _on_step(self) -> bool:
+        for info in self.locals.get("infos", []):
+            if "portfolio_return" in info:
+                self._portfolio_returns.append(info["portfolio_return"])
+
+        if self.n_calls % self.log_freq == 0 and self._portfolio_returns:
+            step = self.num_timesteps + self._offset
+            recent = np.array(self._portfolio_returns[-2000:])
+            metrics = {
+                "train/timesteps": step,
+                "train/mean_return": float(np.mean(recent)),
+            }
+            if len(recent) >= 50:
+                from src.executor.evaluate import compute_sharpe_ratio
+
+                metrics["train/sharpe_ratio"] = compute_sharpe_ratio(recent, annualize=True)
+            if wandb.run is not None:
+                wandb.log(metrics, step=step)
+        return True
 
 
 def _train_single_seed_dqn(
@@ -90,10 +125,11 @@ def _train_single_seed_dqn(
         min_timesteps=cfg["min_timesteps"],
         reward_type=reward_type,
     )
+    train_cb = _SeedDQNWandbCallback(seed=seed, log_freq=1000)
 
     model.learn(
         total_timesteps=cfg["total_timesteps"],
-        callback=[val_cb],
+        callback=[val_cb, train_cb],
         progress_bar=False,
     )
 

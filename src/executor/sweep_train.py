@@ -35,6 +35,38 @@ from src.executor.evaluate import compute_max_drawdown, compute_sharpe_ratio
 
 logger = logging.getLogger(__name__)
 
+# Step offset per seed so W&B x-axis doesn't overlap across sequential seeds
+_SEED_STEP_OFFSETS = {42: 0, 123: 200_000, 999: 400_000}
+
+
+class _SeedWandbCallback(BaseCallback):
+    """Log training metrics with a seed-prefix so 3-seed runs are distinguishable."""
+
+    def __init__(self, seed: int, log_freq: int = 1000, verbose: int = 0):
+        super().__init__(verbose=verbose)
+        self.seed = seed
+        self.log_freq = log_freq
+        self._offset = _SEED_STEP_OFFSETS.get(seed, 0)
+        self._portfolio_returns: list[float] = []
+
+    def _on_step(self) -> bool:
+        for info in self.locals.get("infos", []):
+            if "portfolio_return" in info:
+                self._portfolio_returns.append(info["portfolio_return"])
+
+        if self.n_calls % self.log_freq == 0 and self._portfolio_returns:
+            step = self.num_timesteps + self._offset
+            recent = np.array(self._portfolio_returns[-2000:])
+            metrics = {
+                "train/timesteps": step,
+                "train/mean_return": float(np.mean(recent)),
+            }
+            if len(recent) >= 50:
+                metrics["train/sharpe_ratio"] = compute_sharpe_ratio(recent, annualize=True)
+            if wandb.run is not None:
+                wandb.log(metrics, step=step)
+        return True
+
 
 def evaluate_on_split(
     model: PPO,
@@ -154,12 +186,14 @@ class ValCheckpointCallback(BaseCallback):
         vec_normalize: VecNormalize,
         run_dir: Path,
         patience: int = 3,
+        step_offset: int = 0,
         verbose: int = 0,
     ):
         super().__init__(verbose=verbose)
         self._vec_normalize = vec_normalize
         self._run_dir = run_dir
         self._patience = patience  # rollouts without improvement before stop
+        self._step_offset = step_offset
         self._no_improve_count = 0
         self.best_sharpe: float = -np.inf
         self.best_metrics: dict[str, float] = {}
@@ -188,6 +222,7 @@ class ValCheckpointCallback(BaseCallback):
 
         sharpe = metrics["sharpe_ratio"]
         step = self.num_timesteps
+        wandb_step = step + self._step_offset
 
         # Log to W&B as a time-series so we can see the trajectory
         if wandb.run is not None:
@@ -201,7 +236,7 @@ class ValCheckpointCallback(BaseCallback):
                     "val_rollout/pct_short": metrics["pct_short"],
                     "val_rollout/step": step,
                 },
-                step=step,
+                step=wandb_step,
             )
 
         logger.info(
@@ -294,15 +329,19 @@ def _train_single_seed(
         verbose=0,
     )
 
+    step_offset = _SEED_STEP_OFFSETS.get(seed, 0)
+
     val_cb = ValCheckpointCallback(
         vec_normalize=vec_env,
         run_dir=seed_dir,
         patience=patience,
+        step_offset=step_offset,
     )
+    train_cb = _SeedWandbCallback(seed=seed, log_freq=1000)
 
     model.learn(
         total_timesteps=total_timesteps,
-        callback=[val_cb],
+        callback=[val_cb, train_cb],
         progress_bar=False,
     )
 

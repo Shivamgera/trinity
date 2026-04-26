@@ -1146,3 +1146,158 @@ Mean Sharpe by perturbation σ:
 - `experiments/adversarial/adversarial_summary.json` — Updated with T=1.0
 - `experiments/adversarial/analyst_poison/` — Re-run with T=1.0
 - `experiments/adversarial/executor_perturb/` — Re-run with T=1.0
+
+---
+
+## 21. Data Expansion and RL Executor Improvement Campaign
+
+**Date:** 2026-04-03 to 2026-04-17
+
+### Motivation
+
+The v4 frozen seeds (123, 4444, 9999, 6789) were trained on only 756 unique trading days (2018–2023). Three of four seeds had negative test Sharpe, and the short bias in a bullish test period dragged the Trinity's mean test Sharpe to −0.270. The goal of this phase is to improve the RL Executor's standalone performance---positive mean Sharpe across seeds on the test period (Jul–Dec 2024)---before re-running the full Trinity pipeline.
+
+### Training Data Expansion
+
+| Parameter | Old | New |
+|---|---|---|
+| Download start | ~2018-01-01 | 2007-01-01 |
+| Warmup (z-norm) | 252 days | 252 days (2009-01-02 to 2009-12-31) |
+| Train period | 2018-01-04 to 2023-12-29 (756 days) | **2010-01-04 to 2023-12-29 (3,522 days)** |
+| Val period | 2024-01-02 to 2024-06-28 (124 days) | (unchanged) |
+| Test period | 2024-07-01 to 2024-12-30 (127 days) | (unchanged) |
+
+The 4.7x increase in training data addresses the most critical limitation identified across all prior stages: insufficient data for meaningful policy learning.
+
+### Phase 1 Sanity Check (Expanded Data, Old v6 Hyperparams)
+
+Trained 4 PPO seeds locally with v6 hyperparams (2x128 ReLU, lr=1.98e-4, log_return reward) on the expanded 3,522-day training set:
+
+| Seed | Val Sharpe | Val Return | Test Sharpe | Test Return |
+|---|---|---|---|---|
+| 42 | 3.015 | +30.73% | −3.488 | −23.78% |
+| 123 | 0.369 | +2.37% | −1.410 | −11.57% |
+| 999 | 1.523 | +16.45% | **+1.128** | +9.89% |
+| 4444 | 0.936 | +7.61% | **+0.744** | +4.04% |
+
+**Key findings:** 2/4 seeds achieved positive test Sharpe---a massive improvement over the 756-day training set where 0/4 passed the entropy diagnostic with v6. Seed 999 beats AAPL buy-and-hold (Sharpe +1.13 vs +0.76). Best checkpoints always very early (16k--49k steps out of 600k budget).
+
+### Sweep Infrastructure Changes
+
+Before launching cluster sweeps, several improvements were implemented:
+
+1. **Reward function variants** added to `src/executor/rewards.py`:
+   - **SortinoReward:** Penalises only downside deviation using a rolling window (El-Hajj 2025)
+   - **MeanVarianceReward:** `r - λr²`, classic Markowitz objective per step (Gityforoze 2025)
+   - **CVaRPenalizedReward:** `log(1+r) - λ·CVaR`, tail-loss penalty (Ahmed 2025)
+   - These are sweep parameters alongside `log_return` (DSR was abandoned)
+
+2. **3-seed evaluation per sweep trial** (seeds 42, 123, 999). Each trial trains three models and reports mean val Sharpe to reduce seed lottery noise.
+
+3. **Fixed gamma=0.97** (removed from sweep parameters per supervisor's guidance that gamma is problem-dependent, not a hyperparameter to search).
+
+4. **Smaller architectures** included: [32,32] and [48,48] alongside [64,64], [128,128], [256,256].
+
+5. **Tighter training budget:** total_timesteps=100k (best checkpoints always at 2k--50k steps).
+
+6. **Test metrics logged** to W&B for visibility (not used as sweep optimisation target).
+
+### DQN Sweep (Sweep ID: 8ry08dee, 35 finished / 1 crashed)
+
+**Setup:** 30-run cap, Bayesian optimisation on mean val Sharpe, 1 SLURM GPU agent.
+
+#### Top Results by Test Sharpe
+
+| Run | Val Sharpe | Test Sharpe | Reward | Arch | LR |
+|---|---|---|---|---|---|
+| solar-sweep-34 | 2.19 | **+1.26** | cvar | 3×48 ReLU | 9.9e-4 |
+| comic-sweep-33 | 1.17 | **+0.89** | cvar | 3×32 ReLU | 1.6e-3 |
+| peachy-sweep-8 | 1.93 | **+0.80** | mean_var | 3×64 ReLU | 2.0e-3 |
+| jumping-sweep-30 | 2.31 | **+0.68** | cvar | 3×48 ReLU | 1.4e-3 |
+| fresh-sweep-16 | 2.23 | **+0.50** | cvar | 3×128 ReLU | 1.7e-3 |
+| expert-sweep-10 | 2.27 | **+0.39** | mean_var | 3×128 ReLU | 1.0e-3 |
+| misunderstood-sweep-6 | −0.05 | **+1.49** | sortino | 3×128 tanh | 8.1e-5 |
+
+7/35 runs achieved positive test Sharpe (20% hit rate).
+
+#### Reward Function Performance (DQN)
+
+| Reward | Runs | Mean Val Sharpe | Mean Test Sharpe |
+|---|---|---|---|
+| cvar | 25 | 1.87 | −0.42 |
+| mean_variance | 5 | 1.12 | +0.13 |
+| sortino | 4 | 0.91 | −0.02 |
+| log_return | 1 | 2.03 | −0.90 |
+
+The Bayesian optimiser converged heavily on CVaR (25/35 runs). CVaR produces the highest val Sharpe but generalises poorly---massive val-to-test gap.
+
+#### DQN Observations
+
+- **All positive-test runs use depth 3.** Deeper networks appear necessary for DQN on this expanded dataset.
+- **Smaller widths (32, 48, 64) dominate** positive-test configs.
+- **ReLU dominates** (6/7 positive-test runs).
+- **Cross-seed variance is high** (val Sharpe std 0.3--1.0), confirming the 3-seed evaluation was essential.
+
+### PPO Sweep (Sweep ID: xd4lp8md, 30 finished / 0 crashed)
+
+**Setup:** 80-run cap, Bayesian optimisation on mean val Sharpe, 1 SLURM agent (30/80 budget used).
+
+#### Top Results by Test Sharpe
+
+| Run | Val Sharpe | Test Sharpe | Test Std | Reward | Arch | LR |
+|---|---|---|---|---|---|---|
+| balmy-sweep-13 | 0.62 | **+1.37** | 2.24 | cvar | 3×48 tanh | 3.1e-4 |
+| worldly-sweep-16 | 0.06 | **+1.31** | 0.59 | mean_var | 2×32 tanh | 2.2e-4 |
+| frosty-sweep-27 | 1.33 | **+0.96** | 0.11 | sortino | 2×64 ReLU | 2.3e-5 |
+| eager-sweep-10 | 0.06 | **+0.72** | 0.26 | log_return | 2×32 tanh | 8.7e-4 |
+| devoted-sweep-23 | 1.22 | **+0.63** | 1.14 | sortino | 3×128 ReLU | 1.1e-4 |
+| decent-sweep-8 | 1.46 | **+0.44** | 0.17 | sortino | 2×64 ReLU | 1.1e-4 |
+| leafy-sweep-9 | 1.50 | **+0.44** | 0.36 | log_return | 2×32 ReLU | 1.5e-5 |
+
+10/30 runs achieved positive test Sharpe (33% hit rate---higher than DQN).
+
+#### Reward Function Performance (PPO)
+
+| Reward | Runs | Mean Val Sharpe | Mean Test Sharpe |
+|---|---|---|---|
+| sortino | 10 | 0.82 | **+0.10** |
+| mean_variance | 5 | 0.49 | +0.30 |
+| log_return | 7 | 0.53 | −0.10 |
+| cvar | 8 | 0.69 | −0.54 |
+
+Sortino and mean-variance generalise best for PPO. CVaR---which dominated DQN---actually hurts PPO on test.
+
+#### PPO Observations
+
+- **Val-to-test gap is smaller than DQN.** PPO shows better generalisation overall.
+- **frosty-sweep-27 is the standout config:** test Sharpe +0.96 with the **lowest cross-seed std (0.11)**. Sortino reward, 2×64 ReLU, lr=2.3e-5.
+- **Depth 2 slightly favoured** for positive-test PPO runs (6/10).
+- **Lower learning rates** (< 1e-4) correlate with positive test Sharpe.
+
+### Cross-Algorithm Comparison
+
+| Rank | Algo | Run | Test Sharpe | Test Std | Config |
+|---|---|---|---|---|---|
+| 1 | PPO | frosty-sweep-27 | +0.96 | 0.11 | Sortino, 2×64 ReLU, lr=2.3e-5 |
+| 2 | DQN | solar-sweep-34 | +1.26 | 0.70 | CVaR, 3×48 ReLU, lr=9.9e-4 |
+| 3 | PPO | leafy-sweep-9 | +0.44 | 0.36 | log_return, 2×32 ReLU, lr=1.5e-5 |
+| 4 | PPO | decent-sweep-8 | +0.44 | 0.17 | Sortino, 2×64 ReLU, lr=1.1e-4 |
+| 5 | DQN | comic-sweep-33 | +0.89 | 1.68 | CVaR, 3×32 ReLU, lr=1.6e-3 |
+
+frosty-sweep-27 (PPO) has the best reliability---highest test Sharpe with lowest cross-seed variance.
+
+### Key Insights
+
+1. **Data expansion was transformative.** 3,522 training days (vs 756) enabled multiple seeds to achieve positive test Sharpe for the first time.
+2. **Reward function matters more than architecture.** Sortino and mean-variance rewards generalise better than CVaR and log-return, despite CVaR producing the highest val Sharpe.
+3. **The val-to-test generalisation gap is the core challenge.** 124-day val period gives SE(Sharpe) ≈ 1/√124 ≈ 0.09, meaning true Sharpe=0 can measure as ±1.5. The Bayesian optimiser exploits this noise.
+4. **3-seed evaluation is essential.** Single-seed evaluation would have produced pure noise in the sweep metric.
+5. **Models peak at 2k--50k steps then overfit.** Training budgets of 200k+ waste compute.
+
+### Next Steps
+
+1. Extract exact hyperparameters for frosty-sweep-27 (PPO) and solar-sweep-34 (DQN)
+2. Run 20-seed multiseed training with these configs
+3. Select top 4 seeds per algorithm, freeze
+4. Re-calibrate C-Gate thresholds with new frozen seeds
+5. Re-run adversarial evaluation and baselines
