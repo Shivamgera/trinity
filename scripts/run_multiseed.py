@@ -377,8 +377,8 @@ def main():
     scored_rows = []
     for v, t in zip(val_results, test_results):
         combined = v["sharpe_ratio"] + 0.5 * t["sharpe_ratio"]
-        scored_rows.append((combined, v, t))
-    scored_rows.sort(reverse=True)
+        scored_rows.append((combined, v["seed"], v, t))
+    scored_rows.sort(key=lambda x: x[0], reverse=True)
 
     print(f"\n--- Per-seed details (sorted by combined score) ---")
     print(
@@ -386,7 +386,7 @@ def main():
         f"{'Test Sharpe':>11} | {'Test Ret':>8} | {'Score':>7}"
     )
     print("-" * 72)
-    for combined, v, t in scored_rows:
+    for combined, _seed, v, t in scored_rows:
         print(
             f"{v['seed']:>6} | {v['sharpe_ratio']:>10.3f} | "
             f"{v['total_return']:>7.2%} | {t['sharpe_ratio']:>11.3f} | "
