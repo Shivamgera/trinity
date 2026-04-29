@@ -1,0 +1,61 @@
+# Vol-scaled reward sweep with frosty-sweep-27 base config.
+# Tests the volatility-scaled reward (Zhang, Zohren & Roberts, 2019)
+# which normalises returns by rolling volatility, dampening the signal
+# during low-vol trending periods to break buy-and-hold bias.
+#
+# Sweeps reward_type (vol_scaled vs sortino baseline) and inaction_penalty.
+# All other hyperparameters locked from frosty-sweep-27 (v7).
+
+program: src/executor/sweep_train.py
+method: bayes
+metric:
+  name: val/sharpe_ratio
+  goal: maximize
+
+run_cap: 30
+
+parameters:
+  # ---- Swept parameters ----
+  reward_type:
+    values: ["vol_scaled", "sortino"]
+
+  inaction_penalty:
+    distribution: log_uniform_values
+    min: 1.0e-5
+    max: 1.0e-2
+
+  # ---- All locked from frosty-sweep-27 ----
+  learning_rate:
+    value: 2.299e-5
+  gamma:
+    value: 0.97
+  ent_coef:
+    value: 0.02970
+  gae_lambda:
+    value: 0.9467
+  clip_range:
+    value: 0.1
+  n_steps:
+    value: 2048
+  batch_size:
+    value: 128
+  net_arch_width:
+    value: 64
+  net_arch_depth:
+    value: 2
+  activation_fn:
+    value: "relu"
+  norm_reward:
+    value: false
+  total_timesteps:
+    value: 100000
+  patience:
+    value: 12
+
+# Fixed hyperparameters (hardcoded in sweep_train.py):
+#   n_epochs:         10
+#   n_envs:           8
+#   seeds:            [42, 123, 999] (3-seed mean evaluation)
+#   transaction_cost: 0.001
+#   slippage:         0.0005
+#   inaction_threshold: 20 (default in env.py)

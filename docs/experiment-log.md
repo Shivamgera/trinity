@@ -1374,7 +1374,47 @@ Mean test return: +3.80% ± 5.29%. 16/20 seeds achieved positive test Sharpe (80
 3. If sweep finds a penalty value that improves test Sharpe or policy diversity, run 20-seed multiseed with that value.
 4. Freeze top 4 seeds and proceed to C-Gate recalibration.
 
+### Inaction Penalty Sweep (Sweep ID: tg306501, 15 finished)
+
+**Date:** 2026-04-29
+
+#### Setup
+
+Modified the inaction penalty logic in `env.py` to penalise holding *any* same action for more than 20 consecutive steps (including flat), removing the previous `self._position != 0.0` guard that only penalised non-zero positions. Created a focused sweep (`configs/inaction_sweep.yaml`) with all frosty-sweep-27 hyperparameters locked; only `inaction_penalty` swept over [1e-4, 1e-2] log-uniform. 15 trials, 4 parallel SLURM agents, 3-seed evaluation per trial.
+
+#### Results
+
+All 15 runs produced **identical behaviour**:
+
+| Metric | Value (all 15 runs) |
+|--------|---------------------|
+| Val Sharpe (mean of 3 seeds) | 1.2875 |
+| Val pct_long | 81.4% |
+| Val pct_flat | 18.6% |
+| Val rollout best Sharpe | 1.4217 (step 114688) |
+| Test Sharpe | 0.927 |
+
+Penalty values tried: 1.0e-4, 1.3e-4, 1.8e-4, 1.8e-4, 1.9e-4, 4.9e-4, 7.4e-4, 7.6e-4, 8.1e-4, 9.1e-4, 1.2e-3, 3.3e-3, 4.9e-3, 4.9e-3, 8.8e-3. An 88× range with zero effect on agent behaviour.
+
+#### Interpretation
+
+The sortino reward from AAPL's bull trend completely dominates the inaction penalty at any magnitude in [1e-4, 1e-2]. The cumulative penalty over a full episode (at most ~0.01 × 100 penalised steps ≈ 1.0) is small relative to the ~15% val return the agent earns by holding long. The Bayesian optimiser found no gradient to exploit because all penalty values produced the same buy-and-hold policy.
+
+#### Literature Review
+
+A review of published RL trading work (FinRL, Liu et al. 2020; Zhang, Zohren & Roberts 2019; Moody & Saffell 2001) reveals that inaction penalties are not a standard technique. The field prevents mode collapse through:
+
+1. **Continuous action spaces** ([-1, 1] position sizing)---used by virtually all published systems. Discrete {flat, long, short} is extremely coarse and makes exploration trivially easy to shortcut.
+2. **Volatility-scaled rewards** (Zhang et al. 2019): `r_t = position × return / σ_t`, where σ_t is rolling volatility. Dividing by volatility dampens the reward during low-vol trending periods, breaking the buy-and-hold bias.
+3. **Differential Sharpe Ratio** (Moody & Saffell 2001): the Sharpe denominator penalises return variance, incentivising the agent to reduce exposure during consolidation.
+4. **Multi-asset training** (FinRL): training on 30+ stocks prevents overfitting to a single trend.
+
+The discrete action space and single-ticker constraints are locked for this thesis. The most actionable change within constraints would be volatility-scaled rewards, but this is deferred in favour of accepting the v7 baseline (mean test Sharpe +0.568, p=0.004) and proceeding with C-Gate recalibration.
+
 ### Artifacts
 
 - `experiments/executor/multiseed_v7/multiseed_full_results.json` --- Full per-seed results
 - SLURM job 1821 logs: `slurm/logs/ppo_ms_1821_*.{err,out}`
+- Inaction sweep CSV: `wandb_export_2026-04-29T10_34_07.685+02_00.csv`
+- `configs/inaction_sweep.yaml` --- Focused sweep configuration
+- `slurm/launch-inaction-sweep.sh` --- Launch script (4 agents)
