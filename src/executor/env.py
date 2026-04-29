@@ -81,14 +81,14 @@ class TradingEnv(gym.Env):
                       is 1-3bps), providing a safety margin against the
                       "infinite liquidity" simulation artefact.
             dsr_eta: Adaptation rate for Differential Sharpe Ratio.
-            inaction_penalty: Per-step penalty applied when the agent holds a
-                              non-zero position (long or short) without trading
-                              for more than `inaction_threshold` consecutive
-                              steps. Discourages always-short / always-long
-                              mode collapse without penalizing legitimate
-                              trend-following. Default 0.0 (disabled).
-            inaction_threshold: Number of steps of unchanged non-zero position
-                                before the inaction_penalty kicks in.
+            inaction_penalty: Per-step penalty applied when the agent holds the
+                              same action (including flat) for more than
+                              `inaction_threshold` consecutive steps.
+                              Discourages mode collapse to any static policy
+                              (always-long, always-short, always-flat).
+                              Default 0.0 (disabled).
+            inaction_threshold: Number of steps of unchanged position before
+                                the inaction_penalty kicks in.
                                 Default 20 (≈ 1 trading month).
             episode_length: Max steps per episode. None = use all remaining data.
             random_start: If True, randomize starting index on reset.
@@ -299,14 +299,9 @@ class TradingEnv(gym.Env):
             self._unrealized_pnl = 0.0
 
         # Inaction penalty: discourages constant-position mode collapse.
-        # Applied when agent holds a non-zero position beyond the threshold
-        # without changing it, so legitimate trend-following is not penalized
-        # during the initial hold window.
-        if (
-            self.inaction_penalty > 0.0
-            and self._position != 0.0
-            and self._time_since_trade > self.inaction_threshold
-        ):
+        # Applied when agent holds the same action (including flat) beyond
+        # the threshold without changing it.
+        if self.inaction_penalty > 0.0 and self._time_since_trade > self.inaction_threshold:
             portfolio_return -= self.inaction_penalty
 
         # Compute reward via Differential Sharpe Ratio
