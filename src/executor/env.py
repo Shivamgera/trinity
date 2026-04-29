@@ -37,6 +37,7 @@ from src.executor.rewards import (
     LogReturnReward,
     MeanVarianceReward,
     SortinoReward,
+    VolScaledReward,
 )
 
 # Position encoding: maps action index to position value
@@ -158,10 +159,13 @@ class TradingEnv(gym.Env):
             self._reward_fn = MeanVarianceReward()
         elif reward_type == "cvar":
             self._reward_fn = CVaRPenalizedReward()
+        elif reward_type == "vol_scaled":
+            self._reward_fn = VolScaledReward()
         else:
             raise ValueError(
                 f"Unknown reward_type '{reward_type}'. "
-                f"Expected 'dsr', 'log_return', 'sortino', 'mean_variance', or 'cvar'."
+                f"Expected 'dsr', 'log_return', 'sortino', 'mean_variance', "
+                f"'cvar', or 'vol_scaled'."
             )
 
         # State variables (initialized in reset)

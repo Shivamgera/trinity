@@ -224,3 +224,47 @@ class CVaRPenalizedReward:
         # cvar is negative for losses; penalty = -lam * cvar adds a positive
         # penalty when cvar is negative (i.e. large losses in the tail)
         return float(log_ret - self.lam * cvar)
+
+
+class VolScaledReward:
+    """Volatility-scaled return reward (Zhang, Zohren & Roberts, 2019).
+
+    Divides the portfolio return by a rolling estimate of realised
+    volatility:
+
+        reward_t = r_t / max(σ_t, floor)
+
+    where σ_t is the standard deviation of returns over a trailing
+    window.  This normalisation dampens the reward signal during low-
+    volatility trending periods (where buy-and-hold dominates) and
+    amplifies it during high-volatility regimes (where active trading
+    adds value).  The effect is to break the trend-following bias that
+    causes mode collapse to constant-position policies on trending
+    assets.
+
+    Reference:
+        Zhang, Z., Zohren, S. & Roberts, S. (2019). "Deep Reinforcement
+        Learning for Trading." arXiv:1911.10107.
+
+    Args:
+        window: Rolling window for volatility estimation. Default 20
+                (≈ 1 trading month).
+        floor: Minimum volatility to prevent division by near-zero
+               during extremely quiet periods. Default 1e-6.
+    """
+
+    def __init__(self, window: int = 20, floor: float = 1e-6) -> None:
+        self.window = window
+        self.floor = floor
+        self._returns: deque[float] = deque(maxlen=window)
+
+    def reset(self) -> None:
+        self._returns.clear()
+
+    def compute(self, portfolio_return: float) -> float:
+        self._returns.append(portfolio_return)
+        if len(self._returns) < 5:
+            return portfolio_return
+        sigma = float(np.std(self._returns))
+        sigma = max(sigma, self.floor)
+        return float(portfolio_return / sigma)
