@@ -1,4 +1,11 @@
-"""Download AAPL OHLCV data and compute features."""
+"""Download OHLCV data and compute features for one or more tickers.
+
+Usage:
+    python3 -m scripts.download_data                  # AAPL only (default)
+    python3 -m scripts.download_data --multi-ticker   # AAPL + training augmentation tickers
+"""
+
+import argparse
 
 import pandas as pd
 import yfinance as yf
@@ -12,26 +19,25 @@ from src.utils.features import (
 )
 from src.utils.seed import set_global_seed
 
+# Primary ticker (deployment target)
+PRIMARY_TICKER = "AAPL"
 
-def main():
-    set_global_seed(42)
+# Additional tickers for multi-ticker training augmentation.
+# Selected for regime diversity: SPY (broad market), MSFT (similar sector,
+# different drawdown profile), GOOGL (tech, more volatile), AMZN (went
+# sideways/down 2021-2023, teaches defensive positioning).
+AUGMENTATION_TICKERS = ["MSFT", "GOOGL", "SPY", "AMZN"]
 
-    project_root = Path(__file__).parent.parent
-    config_path = project_root / "configs" / "base.yaml"
-    with open(config_path) as f:
-        config = yaml.safe_load(f)
 
-    ticker = config["data"]["ticker"]
-    # Download from 2007-01-01 to provide ~500 trading days of warm-up
-    # before 2009-01-01 (warmup split start), which the 252-day rolling
-    # z-score normalization needs for stable statistics.  The extra margin
-    # ensures all 14 technical indicators (longest: MACD slow=26, BB=20,
-    # RSI=14, realized_vol=20) plus the 252-day z-score window are fully
-    # populated well before the warmup period begins.
+def download_ticker(ticker: str, project_root: Path) -> None:
+    """Download OHLCV data for a single ticker and compute z-normalized features."""
+    print(f"\n{'=' * 60}")
     print(f"Downloading {ticker} data...")
+    print(f"{'=' * 60}")
+
     df = yf.download(ticker, start="2007-01-01", end="2024-12-31", auto_adjust=True)
 
-    # Flatten MultiIndex columns if present (yfinance >= 0.2.31 returns MultiIndex for single ticker)
+    # Flatten MultiIndex columns if present (yfinance >= 0.2.31)
     if isinstance(df.columns, pd.MultiIndex):
         df.columns = df.columns.get_level_values(0)
 
@@ -41,7 +47,7 @@ def main():
     print("Computing features...")
     features = build_feature_dataframe(df)
 
-    # Apply rolling z-score normalization
+    # Apply rolling z-score normalization (per-ticker, not cross-ticker)
     print("Applying rolling z-score normalization...")
     features_norm = rolling_zscore_normalize(features, window=252)
 
@@ -52,23 +58,45 @@ def main():
     print(f"Date range: {features_norm.index[0]} to {features_norm.index[-1]}")
     print(f"Features: {list(features_norm.columns)}")
 
-    # Save
-    output_path = project_root / "data" / "processed" / "aapl_features.parquet"
+    # Save processed features
+    output_path = project_root / "data" / "processed" / f"{ticker.lower()}_features.parquet"
     output_path.parent.mkdir(parents=True, exist_ok=True)
     features_norm.to_parquet(output_path)
     print(f"Saved to {output_path}")
 
-    # Also save raw OHLCV for reference
-    raw_path = project_root / "data" / "raw" / "aapl_ohlcv.parquet"
+    # Save raw OHLCV
+    raw_path = project_root / "data" / "raw" / f"{ticker.lower()}_ohlcv.parquet"
     raw_path.parent.mkdir(parents=True, exist_ok=True)
     df.to_parquet(raw_path)
     print(f"Raw OHLCV saved to {raw_path}")
 
-    # Create split config
-    # Warmup: 2009 (Guardian/Analyst warm-up, not used for RL training)
-    # Train:  2010-2023 (~3,520 trading days — expanded from 756)
-    # Val:    Jan-Jun 2024 (early stopping target)
-    # Test:   Jul-Dec 2024 (held-out evaluation)
+    return features_norm
+
+
+def main():
+    parser = argparse.ArgumentParser(description="Download OHLCV data and compute features")
+    parser.add_argument(
+        "--multi-ticker",
+        action="store_true",
+        help="Download augmentation tickers (MSFT, GOOGL, SPY, AMZN) in addition to AAPL",
+    )
+    args = parser.parse_args()
+
+    set_global_seed(42)
+
+    project_root = Path(__file__).parent.parent
+
+    # Determine tickers to download
+    tickers = [PRIMARY_TICKER]
+    if args.multi_ticker:
+        tickers += AUGMENTATION_TICKERS
+        print(f"Multi-ticker mode: downloading {tickers}")
+
+    # Download each ticker
+    for ticker in tickers:
+        features_norm = download_ticker(ticker, project_root)
+
+    # Create/update split config (same dates for all tickers)
     splits = {
         "warmup": {"start": "2009-01-01", "end": "2009-12-31"},
         "train": {"start": "2010-01-01", "end": "2023-12-31"},
@@ -79,13 +107,15 @@ def main():
     splits_path = project_root / "configs" / "data_splits.yaml"
     with open(splits_path, "w") as f:
         yaml.dump(splits, f, default_flow_style=False)
-    print(f"Splits config saved to {splits_path}")
+    print(f"\nSplits config saved to {splits_path}")
 
-    # Print split sizes
+    # Print split sizes for the primary ticker
+    primary_path = (
+        project_root / "data" / "processed" / f"{PRIMARY_TICKER.lower()}_features.parquet"
+    )
+    primary_features = pd.read_parquet(primary_path)
     for split_name, dates in splits.items():
-        mask = (features_norm.index >= dates["start"]) & (
-            features_norm.index <= dates["end"]
-        )
+        mask = (primary_features.index >= dates["start"]) & (primary_features.index <= dates["end"])
         n = mask.sum()
         print(f"  {split_name}: {n} trading days")
 

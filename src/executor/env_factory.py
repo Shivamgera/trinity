@@ -145,3 +145,73 @@ def create_vec_env(
         )
         for _ in range(n_envs)
     ]
+
+
+# Default tickers for multi-ticker training augmentation.
+# AAPL is the deployment target; others provide regime diversity.
+MULTI_TICKER_DEFAULTS = ["AAPL", "MSFT", "GOOGL", "SPY", "AMZN"]
+
+
+def create_multi_ticker_vec_env(
+    tickers: list[str] | None = None,
+    n_envs: int = 8,
+    split: str = "train",
+    lookback_window: int = 10,
+    transaction_cost: float = 0.001,
+    slippage: float = 0.0005,
+    dsr_eta: float = 0.01,
+    inaction_penalty: float = 0.0,
+    inaction_threshold: int = 20,
+    episode_length: int | None = None,
+    random_start: bool = True,
+    reward_type: str = "dsr",
+) -> list[Callable[[], gym.Env]]:
+    """Create a vec env with round-robin ticker assignment.
+
+    Each sub-environment is bound to a single ticker, assigned in
+    round-robin order across ``n_envs`` slots.  This exposes the agent
+    to diverse market regimes during training while keeping the
+    observation and action spaces identical (all tickers use the same
+    14 z-normalized features).
+
+    Example with 5 tickers and 8 envs::
+
+        env 0: AAPL, env 1: MSFT, env 2: GOOGL, env 3: SPY,
+        env 4: AMZN, env 5: AAPL, env 6: MSFT, env 7: GOOGL
+
+    Args:
+        tickers: List of ticker symbols.  Defaults to MULTI_TICKER_DEFAULTS.
+        n_envs: Number of parallel environment instances.
+        split: Data split to use.
+        lookback_window: Days of history per observation.
+        transaction_cost: Cost per unit position change.
+        slippage: Bid-ask half-spread per unit position change.
+        dsr_eta: Adaptation rate for DSR.
+        inaction_penalty: Per-step penalty for position stasis.
+        inaction_threshold: Steps before inaction_penalty activates.
+        episode_length: Max steps per episode.
+        random_start: Randomize episode start.
+        reward_type: Reward function type.
+
+    Returns:
+        List of callables, each returning a fresh TradingEnv.
+    """
+    if tickers is None:
+        tickers = MULTI_TICKER_DEFAULTS
+
+    return [
+        make_trading_env(
+            ticker=tickers[i % len(tickers)],
+            split=split,
+            lookback_window=lookback_window,
+            transaction_cost=transaction_cost,
+            slippage=slippage,
+            dsr_eta=dsr_eta,
+            inaction_penalty=inaction_penalty,
+            inaction_threshold=inaction_threshold,
+            episode_length=episode_length,
+            random_start=random_start,
+            reward_type=reward_type,
+        )
+        for i in range(n_envs)
+    ]

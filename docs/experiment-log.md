@@ -1411,10 +1411,46 @@ A review of published RL trading work (FinRL, Liu et al. 2020; Zhang, Zohren & R
 
 The discrete action space and single-ticker constraints are locked for this thesis. The most actionable change within constraints would be volatility-scaled rewards, but this is deferred in favour of accepting the v7 baseline (mean test Sharpe +0.568, p=0.004) and proceeding with C-Gate recalibration.
 
+### Vol-Scaled Reward Sweep (Sweep ID: i2v268l5, 30 finished)
+
+**Date:** 2026-04-29 to 2026-05-02
+
+#### Setup
+
+Implemented `VolScaledReward` in `rewards.py` following Zhang, Zohren & Roberts (2019). The reward divides the portfolio return by a rolling 20-day realised volatility estimate:
+
+    reward_t = r_t / max(σ_t, floor)
+
+This normalisation dampens reward signal during low-volatility trending periods (where buy-and-hold dominates) and amplifies it during high-volatility regimes. Ran a 30-trial Bayesian sweep (`configs/vol_scaled_sweep.yaml`) with frosty-sweep-27 config locked, sweeping `reward_type` {vol_scaled, sortino} and `inaction_penalty` [1e-5, 1e-2]. 4 SLURM agents.
+
+#### Results
+
+All 30 runs produced **identical behaviour**---the same buy-and-hold collapse seen in the inaction penalty sweep:
+
+| Reward | Runs | Val Sharpe (3-seed mean) | Val Rollout Best | Test Sharpe | pct_long |
+|--------|------|--------------------------|------------------|-------------|----------|
+| vol_scaled | 27 | 1.424 | 1.4217 | 0.750 | 99.1% |
+| sortino | 3 | 1.327 | 1.4217 | 0.958 | 83.5% |
+
+The Bayesian optimiser favoured vol_scaled (27/30 runs) because it produced slightly higher 3-seed mean val Sharpe (1.424 vs 1.327), but both converged to identical buy-and-hold policies. Inaction penalty values ranged from 1.7e-5 to 2.2e-3 with zero effect.
+
+#### Interpretation
+
+Three consecutive sweeps (inaction penalty, vol-scaled reward, sortino baseline) totalling 75 trials have now produced identical buy-and-hold behaviour. The root cause is structural, not reward-related:
+
+1. **The locked hyperparameters were selected by the original sweep to maximise val Sharpe**, which on a trending asset IS buy-and-hold. Changing the training reward does not change the selection criterion.
+2. **The discrete action space {flat, long, short}** provides no gradient between full position and no position. The agent either holds long or doesn't---there is no "hold 60% long" option that would allow nuanced position sizing.
+3. **AAPL's strong uptrend during both train (2010--2023) and val (Jan--Jun 2024)** makes buy-and-hold genuinely optimal. No reward reshaping can overcome the fact that the correct answer for this asset in this period is "stay long."
+
+This confirms the literature review finding: published RL trading systems that avoid mode collapse use continuous action spaces and/or multi-asset training. The discrete single-stock setup has a fundamental limitation that reward engineering alone cannot resolve.
+
 ### Artifacts
 
 - `experiments/executor/multiseed_v7/multiseed_full_results.json` --- Full per-seed results
 - SLURM job 1821 logs: `slurm/logs/ppo_ms_1821_*.{err,out}`
 - Inaction sweep CSV: `wandb_export_2026-04-29T10_34_07.685+02_00.csv`
-- `configs/inaction_sweep.yaml` --- Focused sweep configuration
+- Vol-scaled sweep CSV: `wandb_export_2026-05-02T13_45_06.053+02_00.csv`
+- `configs/inaction_sweep.yaml` --- Inaction penalty sweep configuration
+- `configs/vol_scaled_sweep.yaml` --- Vol-scaled reward sweep configuration
 - `slurm/launch-inaction-sweep.sh` --- Launch script (4 agents)
+- `slurm/launch-vol-scaled-sweep.sh` --- Launch script (4 agents)
