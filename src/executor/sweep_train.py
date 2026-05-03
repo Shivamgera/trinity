@@ -30,7 +30,7 @@ from stable_baselines3 import PPO
 from stable_baselines3.common.callbacks import BaseCallback
 from stable_baselines3.common.vec_env import DummyVecEnv, VecNormalize
 
-from src.executor.env_factory import create_vec_env, make_trading_env
+from src.executor.env_factory import create_vec_env, create_multi_ticker_vec_env, make_trading_env
 from src.executor.evaluate import compute_max_drawdown, compute_sharpe_ratio
 
 logger = logging.getLogger(__name__)
@@ -296,20 +296,31 @@ def _train_single_seed(
     total_timesteps = cfg["total_timesteps"]
     patience = cfg["patience"]
     dsr_eta = cfg["dsr_eta"]
+    multi_ticker = cfg.get("multi_ticker", False)
     n_epochs = 10
     n_envs = 8
 
     seed_dir = run_dir / f"seed_{seed}"
     seed_dir.mkdir(parents=True, exist_ok=True)
 
-    env_fns = create_vec_env(
-        n_envs=n_envs,
-        split="train",
-        dsr_eta=dsr_eta,
-        inaction_penalty=inaction_penalty,
-        random_start=True,
-        reward_type=reward_type,
-    )
+    if multi_ticker:
+        env_fns = create_multi_ticker_vec_env(
+            n_envs=n_envs,
+            split="train",
+            dsr_eta=dsr_eta,
+            inaction_penalty=inaction_penalty,
+            random_start=True,
+            reward_type=reward_type,
+        )
+    else:
+        env_fns = create_vec_env(
+            n_envs=n_envs,
+            split="train",
+            dsr_eta=dsr_eta,
+            inaction_penalty=inaction_penalty,
+            random_start=True,
+            reward_type=reward_type,
+        )
     vec_env = DummyVecEnv(env_fns)
     vec_env = VecNormalize(vec_env, norm_obs=False, norm_reward=norm_reward, clip_obs=10.0)
 
@@ -396,6 +407,7 @@ def sweep_train() -> None:
             "total_timesteps": cfg.get("total_timesteps", 100_000),
             "patience": cfg.get("patience", 12),
             "dsr_eta": cfg.get("dsr_eta", 0.008),
+            "multi_ticker": cfg.get("multi_ticker", False),
         }
 
         # Architecture
