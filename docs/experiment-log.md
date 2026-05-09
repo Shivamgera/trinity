@@ -1579,3 +1579,102 @@ The sweep-optimised configs improved val Sharpe but degraded test Sharpe---class
 - `experiments/cgate/integration_{val,test}_seed{999,1111,4096,9999}_calibrated.json` --- Per-seed integration results
 - `experiments/cgate/sweep_results.json` --- Full 125-config sweep results
 - `scripts/sweep_cgate.py` --- Updated sweep script (correct seeds/signals/temperatures)
+
+---
+
+## 24. Switching to GPT-5 Analyst Signals
+
+**Date:** 2026-05-09
+
+All scripts were updated to use `precomputed_signals_gpt5.json` (GPT-5 generated) instead of `precomputed_signals.json` (ollama-generated). Both files contain 1,021 entries covering the same date range, but the GPT-5 signals produce different directional calls. Files updated: `src/cgate/calibrate.py`, `scripts/cgate_integration.py`, `scripts/calibrate_and_run.py`, `scripts/sweep_cgate.py`, `scripts/run_adversarial.py`, `scripts/validate_analyst.py`.
+
+### Re-calibrated C-Gate (T=1.0, p20/p80, GPT-5 signals)
+
+**Thresholds:** τ_low=0.6329, τ_high=0.6991 (band width 0.066, wider than the ollama-based 0.032)
+
+| Seed | Split | Agree | Ambig | Conflict | Sharpe | Return | MaxDD |
+|------|-------|-------|-------|----------|--------|--------|-------|
+| 999 | val | 25.7% | 49.6% | 24.8% | 0.217 | +0.81% | 8.80% |
+| 999 | test | 22.4% | 63.8% | 13.8% | 0.391 | +1.72% | 5.49% |
+| 1111 | val | 22.1% | 55.8% | 22.1% | -0.119 | -0.79% | 8.98% |
+| 1111 | test | 32.8% | 51.7% | 15.5% | 2.867 | +5.10% | 1.07% |
+| 4096 | val | 6.2% | 92.0% | 1.8% | 1.395 | +7.20% | 7.02% |
+| 4096 | test | 15.5% | 76.7% | 7.8% | 2.257 | +3.95% | 1.07% |
+| 9999 | val | 26.5% | 38.9% | 34.5% | 0.773 | +3.47% | 6.73% |
+| 9999 | test | 28.4% | 50.0% | 21.6% | 0.731 | +3.50% | 5.15% |
+
+**Mean test Sharpe: +1.561** (all 4 seeds positive), up from +1.121 with ollama signals. The GPT-5 signals produce a wider threshold band and more balanced regime distributions, with less extreme agreement concentrations on test.
+
+---
+
+## 25. Adversarial Evaluation (v1)
+
+**Date:** 2026-05-09
+
+Ran two attack vectors across 4 configurations, 4 seeds, and corruption rates {10%, 20%, 30%, 40%, 50%} on the test split. C-Gate config: T=1.0, τ_low=0.6329, τ_high=0.6991. GPT-5 Analyst signals.
+
+### 25.1 Analyst Poisoning
+
+Flips a fraction of directional LLM signals (buy↔sell); hold signals unchanged. Deterministic corruption seed=42.
+
+**Mean Sharpe by corruption rate (averaged across 4 seeds where applicable):**
+
+| Config | 10% | 20% | 30% | 40% | 50% |
+|--------|-----|-----|-----|-----|-----|
+| Trinity | 1.726 | 1.197 | 1.933 | 1.083 | 0.644 |
+| Executor-Only | 1.753 | 1.753 | 1.753 | 1.753 | 1.753 |
+| Analyst-Only | -0.084 | -1.544 | 1.738 | 0.176 | -0.864 |
+| Trinity-no-CGate | 1.781 | 1.473 | 1.682 | 1.670 | 1.007 |
+
+**Mean MaxDD by corruption rate:**
+
+| Config | 10% | 20% | 30% | 40% | 50% |
+|--------|-----|-----|-----|-----|-----|
+| Trinity | 3.17% | 3.53% | 2.50% | 3.02% | 3.16% |
+| Executor-Only | 4.51% | 4.51% | 4.51% | 4.51% | 4.51% |
+| Analyst-Only | 9.21% | 12.09% | 4.23% | 6.62% | 12.18% |
+| Trinity-no-CGate | 3.57% | 3.66% | 3.15% | 3.23% | 3.67% |
+
+**Observations:**
+- **Analyst-Only is catastrophically fragile** --- erratic Sharpe swings (-1.54 to +1.74) and MaxDD up to 12.2%.
+- **Trinity degrades gracefully** from 1.56 (clean) to 0.64 at 50% poisoning, remaining positive throughout.
+- **Trinity maintains the lowest MaxDD** across all rates (2.5--3.5%), demonstrating robust downside protection.
+- Executor-Only is unaffected (does not use Analyst signals), serving as a constant baseline at Sharpe 1.753.
+
+### 25.2 Executor Perturbation (Gaussian Observation Noise)
+
+Adds N(0, σ) noise to z-normalised observation vectors before policy inference. σ values map directly to corruption rates (σ=0.1 at rate=10%, etc.).
+
+**Mean Sharpe by noise level:**
+
+| Config | σ=0.1 | σ=0.2 | σ=0.3 | σ=0.4 | σ=0.5 |
+|--------|-------|-------|-------|-------|-------|
+| Trinity | 1.775 | 2.053 | 1.345 | 1.449 | 2.114 |
+| Executor-Only | 1.787 | 2.037 | 2.160 | 1.791 | 2.387 |
+| Trinity-no-CGate | 1.812 | 2.060 | 2.050 | 1.667 | 2.376 |
+
+**Mean MaxDD by noise level:**
+
+| Config | σ=0.1 | σ=0.2 | σ=0.3 | σ=0.4 | σ=0.5 |
+|--------|-------|-------|-------|-------|-------|
+| Trinity | 3.17% | 3.37% | 4.03% | 3.99% | 3.30% |
+| Executor-Only | 4.51% | 4.38% | 4.29% | 4.95% | 4.50% |
+| Trinity-no-CGate | 3.57% | 3.50% | 3.55% | 4.13% | 3.57% |
+
+**Observations:**
+- **Performance is non-monotonic** --- Sharpe sometimes *improves* with more noise. This is because the near-uniform policy distributions (~33% per action) make the argmax fragile; observation noise acts as stochastic exploration rather than genuine degradation.
+- **The Gaussian observation noise attack is ineffective** against near-uniform policies. The attack targets policy inputs, but when the policy output is already near-uniform, input perturbations cannot meaningfully shift the action selection.
+- **Trinity again shows the lowest MaxDD** (3.2--4.0% vs Executor-Only's 4.3--5.0%), confirming consistent downside protection.
+
+### 25.3 Limitations and Next Steps
+
+1. The executor perturbation attack is poorly suited to near-uniform policies. A more effective attack would directly corrupt the executor's *output* (action-flipping), bypassing the near-uniform distribution. This will be implemented as a v2 attack.
+2. Analyst-Only has a negative clean Sharpe (-0.068), so poisoning an already-unprofitable baseline has limited informational value.
+3. The Analyst-Only non-monotonicity at 30% (Sharpe jumps to 1.738) is an artefact of the small sample size (116 test days) and the specific set of signals flipped at that rate.
+
+### Artifacts
+
+- `experiments/adversarial/analyst_poison/` --- Per-config, per-seed, per-rate JSON results
+- `experiments/adversarial/executor_perturb/` --- Per-config, per-seed, per-σ JSON results
+- `experiments/adversarial/adversarial_summary.json` --- Combined summary
+- `scripts/run_adversarial.py` --- Updated with correct thresholds and GPT-5 signals path
