@@ -1,6 +1,6 @@
 """Adversarial evaluation of the Trinity architecture and baselines.
 
-Two attack vectors are implemented:
+Three attack vectors are implemented:
 
 1. **Analyst Poisoning** — Flip a fraction of directional LLM signals
    (buy↔sell). Hold signals are left unchanged. This simulates an
@@ -11,8 +11,14 @@ Two attack vectors are implemented:
    features are z-normalised, σ=0.5 means adding half a standard
    deviation of noise. This simulates adversarial state manipulation.
 
+3. **Executor Action-Flip** — With probability p, replace the executor's
+   chosen action with a uniformly random different action. This directly
+   attacks the executor's output channel, bypassing near-uniform policy
+   distributions. For Trinity, the flip occurs before the C-Gate, allowing
+   the architecture to potentially override corrupted actions.
+
 Four configurations are evaluated under each attack:
-  - **Trinity** (T=1.0, τ_low=0.6548, τ_high=0.6871, Guardian enabled)
+  - **Trinity** (T=1.0, τ_low=0.6329, τ_high=0.6991, Guardian enabled)
   - **Executor-Only** (PPO argmax, full position, no C-Gate/Guardian)
   - **Analyst-Only** (GPT-5 signal executed directly)
   - **Trinity-no-CGate** (agree→full, disagree→50%, no Guardian)
@@ -21,6 +27,7 @@ Usage::
 
     python scripts/run_adversarial.py --attack analyst-poison --split test
     python scripts/run_adversarial.py --attack executor-perturb --split test
+    python scripts/run_adversarial.py --attack executor-flip --split test
     python scripts/run_adversarial.py --attack all --split test
 """
 
@@ -50,6 +57,7 @@ logger = logging.getLogger(__name__)
 INITIAL_PORTFOLIO_VALUE = 100_000.0
 DEFAULT_SIGNALS_PATH = "data/processed/precomputed_signals_gpt5.json"
 CORRUPTION_SEED = 42  # Fixed seed for reproducible signal corruption / noise
+N_ACTIONS = 3  # {flat=0, long=1, short=2}
 
 
 # ── Best sweep config (locked) ──────────────────────────────────────────
@@ -94,6 +102,27 @@ def poison_signals(
         corrupted[date] = "sell" if dec == "buy" else "buy"
 
     return corrupted
+
+
+def flip_action(
+    action: int,
+    flip_rate: float,
+    rng: np.random.Generator,
+) -> tuple[int, bool]:
+    """With probability flip_rate, replace action with a uniformly random *different* action.
+
+    Args:
+        action: Original action in {0, 1, 2}.
+        flip_rate: Probability of flipping (0.0–1.0).
+        rng: Numpy random generator for reproducibility.
+
+    Returns:
+        (possibly_flipped_action, was_flipped)
+    """
+    if flip_rate <= 0.0 or rng.random() >= flip_rate:
+        return action, False
+    alternatives = [a for a in range(N_ACTIONS) if a != action]
+    return int(rng.choice(alternatives)), True
 
 
 # ─────────────────────────────────────────────────────────────────────────
@@ -191,8 +220,10 @@ def _run_trinity(
     date_to_decision: dict[str, str],
     obs_noise_rng: np.random.Generator | None = None,
     obs_noise_sigma: float = 0.0,
+    action_flip_rng: np.random.Generator | None = None,
+    action_flip_rate: float = 0.0,
 ) -> list[dict]:
-    """Run full Trinity (C-Gate + Guardian) with optional obs noise."""
+    """Run full Trinity (C-Gate + Guardian) with optional obs noise or action flip."""
     model, vec_normalize = load_executor(model_dir)
     gate = ConsistencyGate(tau_low=BEST_TAU_LOW, tau_high=BEST_TAU_HIGH)
 
@@ -241,6 +272,23 @@ def _run_trinity(
         pi_rl = get_policy_distribution(
             model, obs_for_policy, vec_normalize, temperature=BEST_TEMPERATURE
         )
+
+        # Action flip attack: permute π_RL so argmax changes
+        action_was_flipped = False
+        if action_flip_rng is not None and action_flip_rate > 0:
+            original_argmax = int(np.argmax(pi_rl))
+            new_action, was_flipped = flip_action(
+                original_argmax, action_flip_rate, action_flip_rng
+            )
+            if was_flipped and new_action != original_argmax:
+                # Swap probabilities so the C-Gate sees the corrupted action as argmax
+                pi_rl_flipped = pi_rl.copy()
+                pi_rl_flipped[original_argmax], pi_rl_flipped[new_action] = (
+                    pi_rl_flipped[new_action],
+                    pi_rl_flipped[original_argmax],
+                )
+                pi_rl = pi_rl_flipped
+                action_was_flipped = True
 
         # Get Analyst decision
         if date and date in date_to_decision:
@@ -330,8 +378,10 @@ def _run_executor_only(
     split: str,
     obs_noise_rng: np.random.Generator | None = None,
     obs_noise_sigma: float = 0.0,
+    action_flip_rng: np.random.Generator | None = None,
+    action_flip_rate: float = 0.0,
 ) -> list[dict]:
-    """Run Executor-Only baseline with optional obs noise."""
+    """Run Executor-Only baseline with optional obs noise or action flip."""
     model, vec_normalize = load_executor(model_dir)
 
     env_fn = make_trading_env(split=split, random_start=False, episode_length=None)
@@ -356,6 +406,10 @@ def _run_executor_only(
 
         pi_rl = get_policy_distribution(model, obs_for_policy, vec_normalize, temperature=1.0)
         action = int(np.argmax(pi_rl))
+
+        # Action flip attack
+        if action_flip_rng is not None and action_flip_rate > 0:
+            action, _ = flip_action(action, action_flip_rate, action_flip_rng)
 
         obs, reward, terminated, truncated, info = env.step(action)
         done = terminated or truncated
@@ -442,9 +496,11 @@ def _run_trinity_no_cgate(
     date_to_decision: dict[str, str],
     obs_noise_rng: np.random.Generator | None = None,
     obs_noise_sigma: float = 0.0,
+    action_flip_rng: np.random.Generator | None = None,
+    action_flip_rate: float = 0.0,
     disagree_scale: float = 0.5,
 ) -> list[dict]:
-    """Run Trinity-no-CGate baseline with optional obs noise."""
+    """Run Trinity-no-CGate baseline with optional obs noise or action flip."""
     model, vec_normalize = load_executor(model_dir)
 
     env_fn = make_trading_env(split=split, random_start=False, episode_length=None)
@@ -469,6 +525,10 @@ def _run_trinity_no_cgate(
 
         pi_rl = get_policy_distribution(model, obs_for_policy, vec_normalize, temperature=1.0)
         rl_action = int(np.argmax(pi_rl))
+
+        # Action flip attack
+        if action_flip_rng is not None and action_flip_rate > 0:
+            rl_action, _ = flip_action(rl_action, action_flip_rate, action_flip_rng)
 
         # Analyst decision
         if date and date in date_to_decision:
@@ -767,6 +827,138 @@ def run_executor_perturbation(
     return all_stats
 
 
+def run_executor_action_flip(
+    seeds: list[int],
+    split: str,
+    corruption_rates: list[float],
+    signals_path: str = DEFAULT_SIGNALS_PATH,
+    output_dir: str = "experiments/adversarial",
+) -> list[dict]:
+    """Run Executor Action-Flip attack across all configs, seeds, and rates.
+
+    With probability p, the executor's chosen action is replaced with a
+    uniformly random *different* action. This attacks the executor's output
+    channel directly, bypassing the near-uniform policy distribution issue
+    that renders Gaussian observation noise ineffective.
+
+    For Trinity, the flip occurs before the C-Gate, so the C-Gate and Guardian
+    can potentially override the corrupted action. For Executor-Only, the
+    flipped action goes directly to the environment with no safety net.
+    """
+    frozen_dir = Path("experiments/executor/frozen")
+    out = Path(output_dir) / "executor_flip"
+    out.mkdir(parents=True, exist_ok=True)
+
+    clean_signals = _load_signals(signals_path)
+    all_stats: list[dict] = []
+
+    for rate in corruption_rates:
+        logger.info(f"\n{'=' * 60}")
+        logger.info(f"EXECUTOR ACTION-FLIP — flip_rate={rate:.0%}")
+        logger.info(f"{'=' * 60}")
+
+        # ── Analyst-Only (unaffected by action flip — run once at rate 0) ──
+        if rate == corruption_rates[0]:
+            logger.info(f"  [Analyst-Only] (unaffected by action flip)")
+            results = _run_analyst_only(split, clean_signals)
+            stats = _compute_statistics(
+                results,
+                config="analyst-only",
+                attack="executor-flip",
+                corruption_rate=0.0,
+                split=split,
+                seed=None,
+            )
+            _save(out, "analyst_only.json", stats, results)
+            for r in corruption_rates:
+                s = dict(stats)
+                s["corruption_rate"] = r
+                all_stats.append(s)
+            logger.info(
+                f"    Sharpe={stats['sharpe_ratio']:.4f} | "
+                f"Return={stats['total_return']:.4%} | MaxDD={stats['max_drawdown']:.4%}"
+            )
+
+        for seed in seeds:
+            model_dir = str(frozen_dir / f"seed_{seed}")
+
+            # Trinity
+            logger.info(f"  [Trinity] seed={seed} flip_rate={rate:.0%}")
+            flip_rng_trinity = np.random.default_rng(CORRUPTION_SEED + seed + int(rate * 1000))
+            results = _run_trinity(
+                model_dir,
+                split,
+                clean_signals,
+                action_flip_rng=flip_rng_trinity,
+                action_flip_rate=rate,
+            )
+            stats = _compute_statistics(
+                results,
+                config="trinity",
+                attack="executor-flip",
+                corruption_rate=rate,
+                split=split,
+                seed=seed,
+            )
+            all_stats.append(stats)
+            _save(out, f"trinity_seed{seed}_flip{int(rate * 100)}.json", stats, results)
+            logger.info(
+                f"    Sharpe={stats['sharpe_ratio']:.4f} | "
+                f"Return={stats['total_return']:.4%} | MaxDD={stats['max_drawdown']:.4%}"
+            )
+
+            # Executor-Only
+            logger.info(f"  [Executor-Only] seed={seed} flip_rate={rate:.0%}")
+            flip_rng_exec = np.random.default_rng(CORRUPTION_SEED + seed + int(rate * 1000))
+            results = _run_executor_only(
+                model_dir,
+                split,
+                action_flip_rng=flip_rng_exec,
+                action_flip_rate=rate,
+            )
+            stats = _compute_statistics(
+                results,
+                config="executor-only",
+                attack="executor-flip",
+                corruption_rate=rate,
+                split=split,
+                seed=seed,
+            )
+            all_stats.append(stats)
+            _save(out, f"executor_only_seed{seed}_flip{int(rate * 100)}.json", stats, results)
+            logger.info(
+                f"    Sharpe={stats['sharpe_ratio']:.4f} | "
+                f"Return={stats['total_return']:.4%} | MaxDD={stats['max_drawdown']:.4%}"
+            )
+
+            # Trinity-no-CGate
+            logger.info(f"  [Trinity-no-CGate] seed={seed} flip_rate={rate:.0%}")
+            flip_rng_tnc = np.random.default_rng(CORRUPTION_SEED + seed + int(rate * 1000))
+            results = _run_trinity_no_cgate(
+                model_dir,
+                split,
+                clean_signals,
+                action_flip_rng=flip_rng_tnc,
+                action_flip_rate=rate,
+            )
+            stats = _compute_statistics(
+                results,
+                config="trinity-no-cgate",
+                attack="executor-flip",
+                corruption_rate=rate,
+                split=split,
+                seed=seed,
+            )
+            all_stats.append(stats)
+            _save(out, f"trinity_no_cgate_seed{seed}_flip{int(rate * 100)}.json", stats, results)
+            logger.info(
+                f"    Sharpe={stats['sharpe_ratio']:.4f} | "
+                f"Return={stats['total_return']:.4%} | MaxDD={stats['max_drawdown']:.4%}"
+            )
+
+    return all_stats
+
+
 # ─────────────────────────────────────────────────────────────────────────
 # I/O helpers
 # ─────────────────────────────────────────────────────────────────────────
@@ -880,7 +1072,7 @@ def main():
     parser.add_argument(
         "--attack",
         default="all",
-        choices=["analyst-poison", "executor-perturb", "all"],
+        choices=["analyst-poison", "executor-perturb", "executor-flip", "all"],
         help="Attack type (default: all)",
     )
     parser.add_argument(
@@ -917,7 +1109,11 @@ def main():
     frozen_dir = Path("experiments/executor/frozen")
     seeds = [args.seed] if args.seed is not None else _discover_seeds(frozen_dir)
 
-    attacks = ["analyst-poison", "executor-perturb"] if args.attack == "all" else [args.attack]
+    attacks = (
+        ["analyst-poison", "executor-perturb", "executor-flip"]
+        if args.attack == "all"
+        else [args.attack]
+    )
 
     combined_stats: dict[str, list[dict]] = {}
 
@@ -943,6 +1139,17 @@ def main():
             )
             combined_stats["executor-perturb"] = stats
             print_summary(stats, "Executor Perturbation")
+
+        elif attack == "executor-flip":
+            stats = run_executor_action_flip(
+                seeds=seeds,
+                split=args.split,
+                corruption_rates=args.rates,
+                signals_path=args.signals_path,
+                output_dir=args.output_dir,
+            )
+            combined_stats["executor-flip"] = stats
+            print_summary(stats, "Executor Action-Flip")
 
     # Save combined summary
     out = Path(args.output_dir)
