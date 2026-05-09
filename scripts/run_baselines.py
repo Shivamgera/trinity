@@ -3,10 +3,11 @@
 Baselines share the same portfolio tracking / return calculation / output
 format as ``cgate_integration.py`` so that metrics are directly comparable.
 
-Three baselines are implemented:
+Four baselines are implemented:
   1. **Executor-only** — PPO argmax at full position, no C-Gate, no Guardian.
   2. **Analyst-only** — GPT-5 signal executed directly, no RL.
-  3. **Trinity-no-CGate** — If argmax(π_RL)==d_LLM → full position;
+  3. **Buy-and-Hold** — Always long (action=1) at full position.
+  4. **Trinity-no-CGate** — If argmax(π_RL)==d_LLM → full position;
                            if disagree → argmax(π_RL) at 50% position.
                            No Δ, no thresholds, no Guardian.
 
@@ -14,6 +15,7 @@ Usage::
 
     python scripts/run_baselines.py --baseline executor-only --split test
     python scripts/run_baselines.py --baseline analyst-only --split both
+    python scripts/run_baselines.py --baseline buy-and-hold --split test
     python scripts/run_baselines.py --baseline trinity-no-cgate --seed 789
     python scripts/run_baselines.py --baseline all --split both
 """
@@ -112,7 +114,7 @@ def _track_portfolio_step(
         step_return = 0.0
 
     daily_pnl = step_return * portfolio_value
-    portfolio_value *= (1.0 + step_return)
+    portfolio_value *= 1.0 + step_return
     if portfolio_value > peak_value:
         peak_value = portfolio_value
 
@@ -170,19 +172,21 @@ def run_executor_only(
             current_price, new_price, effective_position, portfolio_value, peak_value
         )
 
-        results.append({
-            "date": date,
-            "action": action,
-            "rl_argmax": action,
-            "pi_rl": pi_rl.tolist(),
-            "position": env_position,
-            "effective_position": new_effective_position,
-            "position_scale": 1.0,
-            "price": new_price,
-            "step_return": step_return,
-            "portfolio_value": portfolio_value,
-            "reward": float(reward),
-        })
+        results.append(
+            {
+                "date": date,
+                "action": action,
+                "rl_argmax": action,
+                "pi_rl": pi_rl.tolist(),
+                "position": env_position,
+                "effective_position": new_effective_position,
+                "position_scale": 1.0,
+                "price": new_price,
+                "step_return": step_return,
+                "portfolio_value": portfolio_value,
+                "reward": float(reward),
+            }
+        )
 
         effective_position = new_effective_position
 
@@ -268,19 +272,21 @@ def run_analyst_only(
             current_price, new_price, effective_position, portfolio_value, peak_value
         )
 
-        results.append({
-            "date": date,
-            "action": action,
-            "analyst_decision": d_llm,
-            "has_analyst_signal": has_signal,
-            "position": env_position,
-            "effective_position": new_effective_position,
-            "position_scale": 1.0,
-            "price": new_price,
-            "step_return": step_return,
-            "portfolio_value": portfolio_value,
-            "reward": float(reward),
-        })
+        results.append(
+            {
+                "date": date,
+                "action": action,
+                "analyst_decision": d_llm,
+                "has_analyst_signal": has_signal,
+                "position": env_position,
+                "effective_position": new_effective_position,
+                "position_scale": 1.0,
+                "price": new_price,
+                "step_return": step_return,
+                "portfolio_value": portfolio_value,
+                "reward": float(reward),
+            }
+        )
 
         effective_position = new_effective_position
 
@@ -308,7 +314,74 @@ def run_analyst_only(
 
 
 # ---------------------------------------------------------------------------
-# Baseline 3: Trinity-no-CGate
+# Baseline 3: Buy-and-Hold
+# ---------------------------------------------------------------------------
+
+
+def run_buy_and_hold(
+    split: str = "test",
+) -> dict:
+    """Buy-and-hold baseline: take action=1 (long) every step at full position.
+
+    Args:
+        split: Data split ("val" or "test").
+
+    Returns:
+        Dict with statistics and per-step results.
+    """
+    logger.info(f"[Buy-and-Hold] Running on {split}")
+
+    env_fn = make_trading_env(split=split, random_start=False, episode_length=None)
+    env = env_fn()
+    obs, info = env.reset()
+    done = False
+
+    results: list[dict] = []
+    portfolio_value = INITIAL_PORTFOLIO_VALUE
+    peak_value = INITIAL_PORTFOLIO_VALUE
+    effective_position = 0.0
+
+    while not done:
+        date = info.get("date", "")
+        current_price = info.get("price", 0.0)
+
+        action = 1  # Always long
+
+        obs, reward, terminated, truncated, info = env.step(action)
+        done = terminated or truncated
+
+        env_position = info.get("position", 0)
+        new_price = info.get("price", 0.0)
+        new_effective_position = float(env_position)
+
+        step_return, portfolio_value, peak_value, daily_pnl = _track_portfolio_step(
+            current_price, new_price, effective_position, portfolio_value, peak_value
+        )
+
+        results.append(
+            {
+                "date": date,
+                "action": action,
+                "effective_position": new_effective_position,
+                "step_return": step_return,
+                "portfolio_value": portfolio_value,
+            }
+        )
+
+        effective_position = new_effective_position
+
+    env.close()
+
+    stats = _compute_statistics(results, baseline="buy-and-hold", model_dir=None, split=split)
+    logger.info(
+        f"[Buy-and-Hold] {split} | Sharpe: {stats['sharpe_ratio']:.4f} | "
+        f"Return: {stats['total_return']:.4%} | MaxDD: {stats['max_drawdown']:.4%}"
+    )
+    return {"statistics": stats, "results": results}
+
+
+# ---------------------------------------------------------------------------
+# Baseline 4: Trinity-no-CGate
 # ---------------------------------------------------------------------------
 
 
@@ -392,23 +465,25 @@ def run_trinity_no_cgate(
             current_price, new_price, effective_position, portfolio_value, peak_value
         )
 
-        results.append({
-            "date": date,
-            "action": action,
-            "rl_argmax": rl_action,
-            "analyst_decision": d_llm if has_signal else "MISSING",
-            "llm_action": llm_action if has_signal else None,
-            "has_analyst_signal": has_signal,
-            "agreement": agreement,
-            "position_scale": position_scale,
-            "position": env_position,
-            "effective_position": new_effective_position,
-            "pi_rl": pi_rl.tolist(),
-            "price": new_price,
-            "step_return": step_return,
-            "portfolio_value": portfolio_value,
-            "reward": float(reward),
-        })
+        results.append(
+            {
+                "date": date,
+                "action": action,
+                "rl_argmax": rl_action,
+                "analyst_decision": d_llm if has_signal else "MISSING",
+                "llm_action": llm_action if has_signal else None,
+                "has_analyst_signal": has_signal,
+                "agreement": agreement,
+                "position_scale": position_scale,
+                "position": env_position,
+                "effective_position": new_effective_position,
+                "pi_rl": pi_rl.tolist(),
+                "price": new_price,
+                "step_return": step_return,
+                "portfolio_value": portfolio_value,
+                "reward": float(reward),
+            }
+        )
 
         effective_position = new_effective_position
 
@@ -501,6 +576,19 @@ def run_all_baselines(
                 with open(path, "w") as f:
                     json.dump(output, f, indent=2)
                 logger.info(f"Saved to {path}")
+            elif baseline == "buy-and-hold":
+                key = f"buy_and_hold_{split}"
+                logger.info(f"\n{'─' * 50}")
+                logger.info(f"Running: {key}")
+                logger.info(f"{'─' * 50}")
+
+                output = run_buy_and_hold(split=split)
+                all_stats[key] = output["statistics"]
+
+                path = out / f"{key}.json"
+                with open(path, "w") as f:
+                    json.dump(output, f, indent=2)
+                logger.info(f"Saved to {path}")
             else:
                 # Seed-dependent baselines
                 for seed in seeds:
@@ -556,7 +644,7 @@ def main():
     parser.add_argument(
         "--baseline",
         default="all",
-        choices=["executor-only", "analyst-only", "trinity-no-cgate", "all"],
+        choices=["executor-only", "analyst-only", "trinity-no-cgate", "buy-and-hold", "all"],
         help="Which baseline to run (default: all)",
     )
     parser.add_argument(
@@ -584,7 +672,7 @@ def main():
     args = parser.parse_args()
 
     if args.baseline == "all":
-        baselines = ["executor-only", "analyst-only", "trinity-no-cgate"]
+        baselines = ["executor-only", "analyst-only", "trinity-no-cgate", "buy-and-hold"]
     else:
         baselines = [args.baseline]
 
