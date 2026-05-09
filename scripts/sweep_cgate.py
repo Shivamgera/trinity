@@ -38,7 +38,7 @@ DEFAULT_TEMPERATURES = [0.5, 0.75, 1.0, 1.5, 2.0]
 DEFAULT_LOW_PCTS = [10, 15, 20, 25, 30]
 DEFAULT_HIGH_PCTS = [70, 75, 80, 85, 90]
 SEEDS = [1111, 4096, 999, 9999]
-SIGNALS_PATH = "data/processed/precomputed_signals.json"
+SIGNALS_PATH = "data/processed/precomputed_signals_gpt5.json"
 FROZEN_DIR = "experiments/executor/frozen"
 
 

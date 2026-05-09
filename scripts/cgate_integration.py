@@ -44,7 +44,7 @@ logger = logging.getLogger(__name__)
 
 
 def load_precomputed_signals(
-    signals_path: str = "data/processed/precomputed_signals.json",
+    signals_path: str = "data/processed/precomputed_signals_gpt5.json",
 ) -> dict[str, str]:
     """Load precomputed Analyst signals, returning date -> decision mapping."""
     with open(signals_path, "r") as f:
@@ -62,7 +62,7 @@ def run_cgate_integration(
     split: str = "test",
     tau_low: float = 0.1,
     tau_high: float = 0.4,
-    signals_path: str = "data/processed/precomputed_signals.json",
+    signals_path: str = "data/processed/precomputed_signals_gpt5.json",
     temperature: float = 1.0,
     enable_guardian: bool = True,
     guardian_config_path: str = "configs/guardian.yaml",
@@ -112,9 +112,13 @@ def run_cgate_integration(
         try:
             hard_config, adaptive_config = load_guardian_config(guardian_config_path)
             guardian = Guardian(hard_config=hard_config, adaptive_config=adaptive_config)
-            logger.info("Guardian initialized (Stage 1: hard constraints, Stage 2: adaptive policy)")
+            logger.info(
+                "Guardian initialized (Stage 1: hard constraints, Stage 2: adaptive policy)"
+            )
         except FileNotFoundError:
-            logger.warning(f"Guardian config not found at {guardian_config_path}; running without Guardian")
+            logger.warning(
+                f"Guardian config not found at {guardian_config_path}; running without Guardian"
+            )
             guardian = None
 
     # Run the C-Gate integration loop
@@ -198,9 +202,7 @@ def run_cgate_integration(
         elif guardian is not None:
             # Build PortfolioState for Guardian
             current_drawdown = (
-                (peak_value - portfolio_value) / peak_value
-                if peak_value > 0
-                else 0.0
+                (peak_value - portfolio_value) / peak_value if peak_value > 0 else 0.0
             )
             portfolio_state = PortfolioState(
                 position=effective_position,
@@ -245,7 +247,7 @@ def run_cgate_integration(
 
         # ── Update portfolio tracking ──
         daily_pnl = step_return * portfolio_value
-        portfolio_value *= (1.0 + step_return)
+        portfolio_value *= 1.0 + step_return
         if portfolio_value > peak_value:
             peak_value = portfolio_value
         # Simplified cash model: cash = portfolio_value when flat,
@@ -311,7 +313,9 @@ def run_cgate_integration(
     # Guardian-specific stats
     guardian_stats: dict = {}
     if enable_guardian and guardian is not None:
-        n_scaled = sum(1 for r in results if r["position_scale"] < 1.0 and r["position_scale"] > 0.0)
+        n_scaled = sum(
+            1 for r in results if r["position_scale"] < 1.0 and r["position_scale"] > 0.0
+        )
         n_stop_losses = sum(1 for r in results if r["stop_loss_triggered"])
         n_stage1 = sum(1 for r in results if r["blocked_by_stage1"])
         guardian_stats = {
@@ -377,9 +381,15 @@ def run_cgate_integration(
     logger.info(f"  Max drawdown:  {max_dd:.4%}")
     if guardian_stats:
         logger.info(f"\nGuardian interventions:")
-        logger.info(f"  Position scaled (ambiguity): {guardian_stats['n_position_scaled']} ({guardian_stats['pct_position_scaled']:.1%})")
-        logger.info(f"  Stop-loss exits:             {guardian_stats['n_stop_loss_exits']} ({guardian_stats['pct_stop_loss_exits']:.1%})")
-        logger.info(f"  Stage 1 circuit breakers:    {guardian_stats['n_stage1_blocks']} ({guardian_stats['pct_stage1_blocks']:.1%})")
+        logger.info(
+            f"  Position scaled (ambiguity): {guardian_stats['n_position_scaled']} ({guardian_stats['pct_position_scaled']:.1%})"
+        )
+        logger.info(
+            f"  Stop-loss exits:             {guardian_stats['n_stop_loss_exits']} ({guardian_stats['pct_stop_loss_exits']:.1%})"
+        )
+        logger.info(
+            f"  Stage 1 circuit breakers:    {guardian_stats['n_stage1_blocks']} ({guardian_stats['pct_stage1_blocks']:.1%})"
+        )
 
     # Print examples for each regime
     logger.info(f"\nExample outputs per regime:")
@@ -436,10 +446,9 @@ def main():
     )
     parser.add_argument(
         "--signals-path",
-        default="data/processed/precomputed_signals.json",
+        default="data/processed/precomputed_signals_gpt5.json",
         help="Path to precomputed Analyst signals JSON "
-        "(default: data/processed/precomputed_signals.json). "
-        "Use data/processed/precomputed_signals_gpt5.json for GPT-5 signals.",
+        "(default: data/processed/precomputed_signals_gpt5.json).",
     )
     parser.add_argument(
         "--no-guardian",

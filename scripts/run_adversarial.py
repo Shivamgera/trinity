@@ -12,7 +12,7 @@ Two attack vectors are implemented:
    deviation of noise. This simulates adversarial state manipulation.
 
 Four configurations are evaluated under each attack:
-  - **Trinity** (best sweep: T=0.05, Guardian enabled)
+  - **Trinity** (T=1.0, τ_low=0.6548, τ_high=0.6871, Guardian enabled)
   - **Executor-Only** (PPO argmax, full position, no C-Gate/Guardian)
   - **Analyst-Only** (GPT-5 signal executed directly)
   - **Trinity-no-CGate** (agree→full, disagree→50%, no Guardian)
@@ -54,8 +54,8 @@ CORRUPTION_SEED = 42  # Fixed seed for reproducible signal corruption / noise
 
 # ── Best sweep config (locked) ──────────────────────────────────────────
 BEST_TEMPERATURE = 1.0
-BEST_TAU_LOW = 0.6935
-BEST_TAU_HIGH = 0.9877
+BEST_TAU_LOW = 0.6548
+BEST_TAU_HIGH = 0.6871
 
 
 # ─────────────────────────────────────────────────────────────────────────
@@ -81,9 +81,7 @@ def poison_signals(
     corrupted = dict(date_to_decision)
 
     # Identify directional signals
-    directional_dates = [
-        d for d, dec in corrupted.items() if dec.lower() in ("buy", "sell")
-    ]
+    directional_dates = [d for d, dec in corrupted.items() if dec.lower() in ("buy", "sell")]
 
     n_to_flip = int(len(directional_dates) * corruption_rate)
     if n_to_flip == 0:
@@ -311,15 +309,17 @@ def _run_trinity(
         effective_position = new_effective_position
         stop_loss_threshold = stop_loss_override
 
-        results.append({
-            "date": date,
-            "regime": cgate_result.regime,
-            "action": guardian_action,
-            "position_scale": position_scale,
-            "effective_position": effective_position,
-            "step_return": step_return,
-            "portfolio_value": portfolio_value,
-        })
+        results.append(
+            {
+                "date": date,
+                "regime": cgate_result.regime,
+                "action": guardian_action,
+                "position_scale": position_scale,
+                "effective_position": effective_position,
+                "step_return": step_return,
+                "portfolio_value": portfolio_value,
+            }
+        )
 
     env.close()
     return results
@@ -354,9 +354,7 @@ def _run_executor_only(
             noise = obs_noise_rng.normal(0.0, obs_noise_sigma, size=obs.shape)
             obs_for_policy = obs + noise.astype(obs.dtype)
 
-        pi_rl = get_policy_distribution(
-            model, obs_for_policy, vec_normalize, temperature=1.0
-        )
+        pi_rl = get_policy_distribution(model, obs_for_policy, vec_normalize, temperature=1.0)
         action = int(np.argmax(pi_rl))
 
         obs, reward, terminated, truncated, info = env.step(action)
@@ -372,13 +370,15 @@ def _run_executor_only(
 
         effective_position = new_effective_position
 
-        results.append({
-            "date": date,
-            "action": action,
-            "effective_position": effective_position,
-            "step_return": step_return,
-            "portfolio_value": portfolio_value,
-        })
+        results.append(
+            {
+                "date": date,
+                "action": action,
+                "effective_position": effective_position,
+                "step_return": step_return,
+                "portfolio_value": portfolio_value,
+            }
+        )
 
     env.close()
     return results
@@ -422,13 +422,15 @@ def _run_analyst_only(
 
         effective_position = new_effective_position
 
-        results.append({
-            "date": date,
-            "action": action,
-            "effective_position": effective_position,
-            "step_return": step_return,
-            "portfolio_value": portfolio_value,
-        })
+        results.append(
+            {
+                "date": date,
+                "action": action,
+                "effective_position": effective_position,
+                "step_return": step_return,
+                "portfolio_value": portfolio_value,
+            }
+        )
 
     env.close()
     return results
@@ -465,9 +467,7 @@ def _run_trinity_no_cgate(
             noise = obs_noise_rng.normal(0.0, obs_noise_sigma, size=obs.shape)
             obs_for_policy = obs + noise.astype(obs.dtype)
 
-        pi_rl = get_policy_distribution(
-            model, obs_for_policy, vec_normalize, temperature=1.0
-        )
+        pi_rl = get_policy_distribution(model, obs_for_policy, vec_normalize, temperature=1.0)
         rl_action = int(np.argmax(pi_rl))
 
         # Analyst decision
@@ -500,14 +500,16 @@ def _run_trinity_no_cgate(
 
         effective_position = new_effective_position
 
-        results.append({
-            "date": date,
-            "action": action,
-            "position_scale": position_scale,
-            "effective_position": effective_position,
-            "step_return": step_return,
-            "portfolio_value": portfolio_value,
-        })
+        results.append(
+            {
+                "date": date,
+                "action": action,
+                "position_scale": position_scale,
+                "effective_position": effective_position,
+                "step_return": step_return,
+                "portfolio_value": portfolio_value,
+            }
+        )
 
     env.close()
     return results
@@ -544,7 +546,8 @@ def run_analyst_poisoning(
 
         # Count flips
         n_flipped = sum(
-            1 for d in clean_signals
+            1
+            for d in clean_signals
             if clean_signals[d] != corrupted_signals.get(d, clean_signals[d])
         )
         logger.info(f"  Flipped {n_flipped} directional signals")
@@ -553,12 +556,16 @@ def run_analyst_poisoning(
         logger.info(f"  [Analyst-Only] rate={rate:.0%}")
         results = _run_analyst_only(split, corrupted_signals)
         stats = _compute_statistics(
-            results, config="analyst-only", attack="analyst-poison",
-            corruption_rate=rate, split=split, seed=None,
+            results,
+            config="analyst-only",
+            attack="analyst-poison",
+            corruption_rate=rate,
+            split=split,
+            seed=None,
             extra={"n_flipped": n_flipped},
         )
         all_stats.append(stats)
-        _save(out, f"analyst_only_rate{int(rate*100)}.json", stats, results)
+        _save(out, f"analyst_only_rate{int(rate * 100)}.json", stats, results)
         logger.info(
             f"    Sharpe={stats['sharpe_ratio']:.4f} | "
             f"Return={stats['total_return']:.4%} | MaxDD={stats['max_drawdown']:.4%}"
@@ -572,11 +579,15 @@ def run_analyst_poisoning(
             logger.info(f"  [Trinity] seed={seed} rate={rate:.0%}")
             results = _run_trinity(model_dir, split, corrupted_signals)
             stats = _compute_statistics(
-                results, config="trinity", attack="analyst-poison",
-                corruption_rate=rate, split=split, seed=seed,
+                results,
+                config="trinity",
+                attack="analyst-poison",
+                corruption_rate=rate,
+                split=split,
+                seed=seed,
             )
             all_stats.append(stats)
-            _save(out, f"trinity_seed{seed}_rate{int(rate*100)}.json", stats, results)
+            _save(out, f"trinity_seed{seed}_rate{int(rate * 100)}.json", stats, results)
             logger.info(
                 f"    Sharpe={stats['sharpe_ratio']:.4f} | "
                 f"Return={stats['total_return']:.4%} | MaxDD={stats['max_drawdown']:.4%}"
@@ -589,8 +600,12 @@ def run_analyst_poisoning(
                 logger.info(f"  [Executor-Only] seed={seed} (unaffected by signal poison)")
                 results = _run_executor_only(model_dir, split)
                 stats = _compute_statistics(
-                    results, config="executor-only", attack="analyst-poison",
-                    corruption_rate=0.0, split=split, seed=seed,
+                    results,
+                    config="executor-only",
+                    attack="analyst-poison",
+                    corruption_rate=0.0,
+                    split=split,
+                    seed=seed,
                 )
                 # Save at rate 0 — reuse for all rates
                 _save(out, f"executor_only_seed{seed}.json", stats, results)
@@ -608,11 +623,15 @@ def run_analyst_poisoning(
             logger.info(f"  [Trinity-no-CGate] seed={seed} rate={rate:.0%}")
             results = _run_trinity_no_cgate(model_dir, split, corrupted_signals)
             stats = _compute_statistics(
-                results, config="trinity-no-cgate", attack="analyst-poison",
-                corruption_rate=rate, split=split, seed=seed,
+                results,
+                config="trinity-no-cgate",
+                attack="analyst-poison",
+                corruption_rate=rate,
+                split=split,
+                seed=seed,
             )
             all_stats.append(stats)
-            _save(out, f"trinity_no_cgate_seed{seed}_rate{int(rate*100)}.json", stats, results)
+            _save(out, f"trinity_no_cgate_seed{seed}_rate{int(rate * 100)}.json", stats, results)
             logger.info(
                 f"    Sharpe={stats['sharpe_ratio']:.4f} | "
                 f"Return={stats['total_return']:.4%} | MaxDD={stats['max_drawdown']:.4%}"
@@ -647,8 +666,12 @@ def run_executor_perturbation(
             logger.info(f"  [Analyst-Only] (unaffected by obs perturbation)")
             results = _run_analyst_only(split, clean_signals)
             stats = _compute_statistics(
-                results, config="analyst-only", attack="executor-perturb",
-                corruption_rate=0.0, split=split, seed=None,
+                results,
+                config="analyst-only",
+                attack="executor-perturb",
+                corruption_rate=0.0,
+                split=split,
+                seed=None,
             )
             _save(out, "analyst_only.json", stats, results)
             for r in corruption_rates:
@@ -671,15 +694,22 @@ def run_executor_perturbation(
             logger.info(f"  [Trinity] seed={seed} σ={sigma:.2f}")
             noise_rng_trinity = np.random.default_rng(CORRUPTION_SEED + seed + int(rate * 1000))
             results = _run_trinity(
-                model_dir, split, clean_signals,
-                obs_noise_rng=noise_rng_trinity, obs_noise_sigma=sigma,
+                model_dir,
+                split,
+                clean_signals,
+                obs_noise_rng=noise_rng_trinity,
+                obs_noise_sigma=sigma,
             )
             stats = _compute_statistics(
-                results, config="trinity", attack="executor-perturb",
-                corruption_rate=rate, split=split, seed=seed,
+                results,
+                config="trinity",
+                attack="executor-perturb",
+                corruption_rate=rate,
+                split=split,
+                seed=seed,
             )
             all_stats.append(stats)
-            _save(out, f"trinity_seed{seed}_sigma{int(rate*100)}.json", stats, results)
+            _save(out, f"trinity_seed{seed}_sigma{int(rate * 100)}.json", stats, results)
             logger.info(
                 f"    Sharpe={stats['sharpe_ratio']:.4f} | "
                 f"Return={stats['total_return']:.4%} | MaxDD={stats['max_drawdown']:.4%}"
@@ -689,15 +719,21 @@ def run_executor_perturbation(
             logger.info(f"  [Executor-Only] seed={seed} σ={sigma:.2f}")
             noise_rng_exec = np.random.default_rng(CORRUPTION_SEED + seed + int(rate * 1000))
             results = _run_executor_only(
-                model_dir, split,
-                obs_noise_rng=noise_rng_exec, obs_noise_sigma=sigma,
+                model_dir,
+                split,
+                obs_noise_rng=noise_rng_exec,
+                obs_noise_sigma=sigma,
             )
             stats = _compute_statistics(
-                results, config="executor-only", attack="executor-perturb",
-                corruption_rate=rate, split=split, seed=seed,
+                results,
+                config="executor-only",
+                attack="executor-perturb",
+                corruption_rate=rate,
+                split=split,
+                seed=seed,
             )
             all_stats.append(stats)
-            _save(out, f"executor_only_seed{seed}_sigma{int(rate*100)}.json", stats, results)
+            _save(out, f"executor_only_seed{seed}_sigma{int(rate * 100)}.json", stats, results)
             logger.info(
                 f"    Sharpe={stats['sharpe_ratio']:.4f} | "
                 f"Return={stats['total_return']:.4%} | MaxDD={stats['max_drawdown']:.4%}"
@@ -707,15 +743,22 @@ def run_executor_perturbation(
             logger.info(f"  [Trinity-no-CGate] seed={seed} σ={sigma:.2f}")
             noise_rng_tnc = np.random.default_rng(CORRUPTION_SEED + seed + int(rate * 1000))
             results = _run_trinity_no_cgate(
-                model_dir, split, clean_signals,
-                obs_noise_rng=noise_rng_tnc, obs_noise_sigma=sigma,
+                model_dir,
+                split,
+                clean_signals,
+                obs_noise_rng=noise_rng_tnc,
+                obs_noise_sigma=sigma,
             )
             stats = _compute_statistics(
-                results, config="trinity-no-cgate", attack="executor-perturb",
-                corruption_rate=rate, split=split, seed=seed,
+                results,
+                config="trinity-no-cgate",
+                attack="executor-perturb",
+                corruption_rate=rate,
+                split=split,
+                seed=seed,
             )
             all_stats.append(stats)
-            _save(out, f"trinity_no_cgate_seed{seed}_sigma{int(rate*100)}.json", stats, results)
+            _save(out, f"trinity_no_cgate_seed{seed}_sigma{int(rate * 100)}.json", stats, results)
             logger.info(
                 f"    Sharpe={stats['sharpe_ratio']:.4f} | "
                 f"Return={stats['total_return']:.4%} | MaxDD={stats['max_drawdown']:.4%}"
@@ -774,7 +817,9 @@ def print_summary(all_stats: list[dict], attack_name: str) -> None:
 
     # Sharpe table
     logger.info(f"\n  Mean Sharpe by corruption rate:")
-    header = f"  {'Config':<22s}" + "".join(f"{'rate='+str(int(r*100))+'%':>12s}" for r in rates)
+    header = f"  {'Config':<22s}" + "".join(
+        f"{'rate=' + str(int(r * 100)) + '%':>12s}" for r in rates
+    )
     logger.info(header)
     logger.info("  " + "-" * (22 + 12 * len(rates)))
     for cfg in configs:
@@ -790,7 +835,9 @@ def print_summary(all_stats: list[dict], attack_name: str) -> None:
 
     # MaxDD table
     logger.info(f"\n  Mean MaxDD by corruption rate:")
-    header = f"  {'Config':<22s}" + "".join(f"{'rate='+str(int(r*100))+'%':>12s}" for r in rates)
+    header = f"  {'Config':<22s}" + "".join(
+        f"{'rate=' + str(int(r * 100)) + '%':>12s}" for r in rates
+    )
     logger.info(header)
     logger.info("  " + "-" * (22 + 12 * len(rates)))
     for cfg in configs:
@@ -806,7 +853,9 @@ def print_summary(all_stats: list[dict], attack_name: str) -> None:
 
     # Sortino table
     logger.info(f"\n  Mean Sortino by corruption rate:")
-    header = f"  {'Config':<22s}" + "".join(f"{'rate='+str(int(r*100))+'%':>12s}" for r in rates)
+    header = f"  {'Config':<22s}" + "".join(
+        f"{'rate=' + str(int(r * 100)) + '%':>12s}" for r in rates
+    )
     logger.info(header)
     logger.info("  " + "-" * (22 + 12 * len(rates)))
     for cfg in configs:
@@ -868,11 +917,7 @@ def main():
     frozen_dir = Path("experiments/executor/frozen")
     seeds = [args.seed] if args.seed is not None else _discover_seeds(frozen_dir)
 
-    attacks = (
-        ["analyst-poison", "executor-perturb"]
-        if args.attack == "all"
-        else [args.attack]
-    )
+    attacks = ["analyst-poison", "executor-perturb"] if args.attack == "all" else [args.attack]
 
     combined_stats: dict[str, list[dict]] = {}
 

@@ -62,9 +62,7 @@ def load_phrasebank(path: str = "data/raw/", max_samples: int = 50) -> list[dict
                         if label in ("positive", "negative", "neutral"):
                             samples.append({"sentence": sentence, "label": label})
     else:
-        logger.warning(
-            f"No FinancialPhraseBank files found in {path}. Skipping accuracy test."
-        )
+        logger.warning(f"No FinancialPhraseBank files found in {path}. Skipping accuracy test.")
         return []
 
     # Sample evenly across labels
@@ -77,10 +75,7 @@ def load_phrasebank(path: str = "data/raw/", max_samples: int = 50) -> list[dict
     for label, items in by_label.items():
         selected.extend(items[:per_label])
 
-    logger.info(
-        f"Selected {len(selected)} samples: "
-        f"{Counter(s['label'] for s in selected)}"
-    )
+    logger.info(f"Selected {len(selected)} samples: {Counter(s['label'] for s in selected)}")
     return selected
 
 
@@ -206,11 +201,9 @@ def run_delta_preview():
     from src.analyst.schema import TradeSignal
 
     # Load precomputed signals — build date->signal lookup
-    signals_path = "data/processed/precomputed_signals.json"
+    signals_path = "data/processed/precomputed_signals_gpt5.json"
     if not Path(signals_path).exists():
-        logger.error(
-            f"Precomputed signals not found at {signals_path}. Run P3-T2 first."
-        )
+        logger.error(f"Precomputed signals not found at {signals_path}. Run P3-T2 first.")
         return None
 
     with open(signals_path, "r") as f:
@@ -228,9 +221,7 @@ def run_delta_preview():
         from src.executor.env_factory import make_trading_env
         from src.executor.policy import get_policy_distribution, load_executor
 
-        model, vec_normalize = load_executor(
-            "experiments/executor/frozen/seed_7777"
-        )
+        model, vec_normalize = load_executor("experiments/executor/frozen/seed_7777")
     except Exception as e:
         logger.error(f"Could not load Executor model: {e}")
         return None
@@ -241,9 +232,7 @@ def run_delta_preview():
 
     for split in ["val", "test"]:
         try:
-            env_fn = make_trading_env(
-                split=split, random_start=False, episode_length=None
-            )
+            env_fn = make_trading_env(split=split, random_start=False, episode_length=None)
             env = env_fn()
         except Exception as e:
             logger.warning(f"Could not create env for split={split}: {e}")
@@ -285,9 +274,7 @@ def run_delta_preview():
     # Regime counts with initial thresholds
     tau_low, tau_high = 0.1, 0.4
     agreement = float(np.sum(deltas_arr <= tau_low) / len(deltas_arr))
-    ambiguity = float(
-        np.sum((deltas_arr > tau_low) & (deltas_arr <= tau_high)) / len(deltas_arr)
-    )
+    ambiguity = float(np.sum((deltas_arr > tau_low) & (deltas_arr <= tau_high)) / len(deltas_arr))
     conflict = float(np.sum(deltas_arr > tau_high) / len(deltas_arr))
 
     logger.info(f"  Agreement (Δ ≤ {tau_low}): {agreement:.1%}")
