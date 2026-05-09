@@ -34,11 +34,11 @@ logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
 # Sweep grid
-DEFAULT_TEMPERATURES = [0.005, 0.01, 0.02, 0.05, 0.1]
+DEFAULT_TEMPERATURES = [0.5, 0.75, 1.0, 1.5, 2.0]
 DEFAULT_LOW_PCTS = [10, 15, 20, 25, 30]
 DEFAULT_HIGH_PCTS = [70, 75, 80, 85, 90]
-SEEDS = [123, 789, 2048, 7777]
-SIGNALS_PATH = "data/processed/precomputed_signals_gpt5.json"
+SEEDS = [1111, 4096, 999, 9999]
+SIGNALS_PATH = "data/processed/precomputed_signals.json"
 FROZEN_DIR = "experiments/executor/frozen"
 
 
@@ -88,8 +88,10 @@ def run_sweep(
             seeds=seeds,
         )
         delta_cache[temp] = deltas
-        logger.info(f"    -> {len(deltas)} deltas in {time.time() - t0:.1f}s "
-                     f"(mean={deltas.mean():.4f}, std={deltas.std():.4f})")
+        logger.info(
+            f"    -> {len(deltas)} deltas in {time.time() - t0:.1f}s "
+            f"(mean={deltas.mean():.4f}, std={deltas.std():.4f})"
+        )
 
     # Step 2: Enumerate all (temp, low_pct, high_pct) combinations
     combos = list(product(temperatures, low_pcts, high_pcts))
@@ -166,7 +168,7 @@ def run_sweep(
         eta = elapsed / pct_done * (1 - pct_done) if pct_done > 0 else 0
         if (i + 1) % 5 == 0 or (i + 1) == n_combos:
             logger.info(
-                f"  [{i+1}/{n_combos}] T={temp}, pcts=({low_pct},{high_pct}) -> "
+                f"  [{i + 1}/{n_combos}] T={temp}, pcts=({low_pct},{high_pct}) -> "
                 f"mean_sharpe={result['mean_sharpe']:.4f}, "
                 f"mean_dd={result['mean_max_dd']:.4%} "
                 f"[{elapsed:.0f}s elapsed, ~{eta:.0f}s remaining]"
@@ -183,8 +185,7 @@ def run_sweep(
         f"{'Rank':>4s}  {'T':>6s}  {'Lo%':>4s}  {'Hi%':>4s}  "
         f"{'τ_low':>7s}  {'τ_high':>7s}  "
         f"{'Mean':>8s}  {'Med':>8s}  {'Std':>7s}  "
-        f"{'MeanRet':>9s}  {'MeanDD':>8s}  "
-        f"{'S123':>7s}  {'S789':>7s}  {'S2048':>7s}  {'S7777':>7s}"
+        f"{'MeanRet':>9s}  {'MeanDD':>8s}  " + "  ".join(f"{'S' + str(s):>7s}" for s in seeds)
     )
     logger.info(header)
     logger.info("-" * len(header))
@@ -195,8 +196,7 @@ def run_sweep(
             f"{rank:>4d}  {r['temperature']:>6.3f}  {r['low_pct']:>4.0f}  {r['high_pct']:>4.0f}  "
             f"{r['tau_low']:>7.4f}  {r['tau_high']:>7.4f}  "
             f"{r['mean_sharpe']:>8.4f}  {r['median_sharpe']:>8.4f}  {r['std_sharpe']:>7.4f}  "
-            f"{r['mean_return']:>8.4%}  {r['mean_max_dd']:>8.4%}  "
-            + "  ".join(seed_strs)
+            f"{r['mean_return']:>8.4%}  {r['mean_max_dd']:>8.4%}  " + "  ".join(seed_strs)
         )
 
     return all_results
