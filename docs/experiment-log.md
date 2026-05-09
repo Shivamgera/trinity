@@ -1454,3 +1454,61 @@ This confirms the literature review finding: published RL trading systems that a
 - `configs/vol_scaled_sweep.yaml` --- Vol-scaled reward sweep configuration
 - `slurm/launch-inaction-sweep.sh` --- Launch script (4 agents)
 - `slurm/launch-vol-scaled-sweep.sh` --- Launch script (4 agents)
+
+### Multi-Ticker Training Sweep (Sweep ID: akpjyn3i, 15 finished)
+
+**Date:** 2026-05-04 to 2026-05-05
+
+#### Setup
+
+Implemented multi-ticker training as a data augmentation strategy inspired by FinRL (Liu et al., 2020) and Zhang et al. (2019). Added `create_multi_ticker_vec_env()` to `env_factory.py`, which assigns tickers round-robin across the 8 parallel sub-environments: AAPL, MSFT, GOOGL, SPY, AMZN, AAPL, MSFT, GOOGL. The hypothesis was that exposing the agent to diverse market regimes (including bear/sideways markets in AMZN 2021--2023 and the 2022 tech drawdown) would break the buy-and-hold bias learned from AAPL's perpetual uptrend.
+
+Downloaded OHLCV data and computed 14 z-normalized features for all 5 tickers (4,490 rows each, 2007--2024). Validation and test evaluation remained AAPL-only. Ran a 15-trial Bayesian sweep sweeping `reward_type` {sortino, vol_scaled} and `inaction_penalty` [1e-5, 1e-2], all other frosty-sweep-27 hyperparameters locked. 4 SLURM agents.
+
+#### Results
+
+| Reward | Runs | Val Sharpe (3-seed) | Test Sharpe | Test Return | pct_long | pct_short | pct_flat |
+|--------|------|---------------------|-------------|-------------|----------|-----------|----------|
+| vol_scaled | 13 | 1.358 | 0.300 | 2.15% | 79.9% | 8.6% | 11.5% |
+| sortino | 2 | 1.210 | 0.152 | 0.76% | 78.8% | 8.8% | 12.4% |
+
+For comparison, v7 single-ticker baseline: val Sharpe 1.411, test Sharpe **0.568**, test return 3.80%.
+
+#### What Changed
+
+Multi-ticker training successfully introduced **policy diversity**: ~8.5% short positions and ~12% flat allocation appeared in the val metrics, compared to 0% short and <5% flat in most v7 seeds. The agent learned from other tickers' drawdowns that "always long" is not universally optimal.
+
+However, the **best checkpoint** (selected by val Sharpe on AAPL) still converged to buy-and-hold for vol_scaled runs. The diversity appeared during training but the selection criterion favours the buy-and-hold checkpoint because AAPL trends up in the val period. Sortino runs showed a more diverse best checkpoint (Sharpe 0.529 on val rollout vs 1.4217 for buy-and-hold) but this translated to much lower test performance.
+
+#### Interpretation
+
+Multi-ticker training creates a fundamental tension: the agent learns a more cautious, regime-aware policy from diverse tickers, but this policy underperforms on AAPL specifically because AAPL is in a strong uptrend during both val and test periods. The "correct" policy for AAPL in 2024 genuinely is buy-and-hold. Test Sharpe dropped from 0.568 (single-ticker) to 0.152--0.300 (multi-ticker)---the agent's increased caution hurt more than it helped.
+
+### Conclusion: Accepting v7 Baseline
+
+Four consecutive experiments attempted to improve on the v7 multiseed results:
+
+| Experiment | Approach | Outcome |
+|-----------|----------|---------|
+| Inaction penalty sweep (tg306501) | Penalise holding same action >20 steps, [1e-4, 1e-2] | Zero effect: all 15 runs identical buy-and-hold |
+| Vol-scaled reward sweep (i2v268l5) | Divide return by rolling σ_t (Zhang et al. 2019) | Zero effect: all 30 runs identical buy-and-hold |
+| Multi-ticker vol_scaled (akpjyn3i) | Train on AAPL+MSFT+GOOGL+SPY+AMZN | Diverse training, but test Sharpe dropped to 0.300 |
+| Multi-ticker sortino (akpjyn3i) | Same with sortino reward | Diverse policy, but test Sharpe dropped to 0.152 |
+
+The buy-and-hold collapse is structural, arising from three interacting factors: (1) discrete action space with no position-sizing granularity, (2) a single trending asset as both training and evaluation target, and (3) val Sharpe as the checkpoint selection criterion favouring buy-and-hold on trending assets. These are confirmed limitations of the experimental setup, consistent with the published literature (FinRL, Zhang et al., Moody & Saffell) which universally uses continuous action spaces and/or multi-asset portfolios.
+
+**v7 is accepted as the final Executor configuration:** mean test Sharpe +0.568 ± 0.783, p=0.0043, 95% CI [0.202, 0.934], 16/20 seeds positive. Top 4 seeds (1111, 4096, 999, 9999) will be frozen and used for C-Gate recalibration and adversarial evaluation.
+
+### Artifacts
+
+- `experiments/executor/multiseed_v7/multiseed_full_results.json` --- Full per-seed results
+- SLURM job 1821 logs: `slurm/logs/ppo_ms_1821_*.{err,out}`
+- Inaction sweep CSV: `wandb_export_2026-04-29T10_34_07.685+02_00.csv`
+- Vol-scaled sweep CSV: `wandb_export_2026-05-02T13_45_06.053+02_00.csv`
+- Multi-ticker sweep CSV: `wandb_export_2026-05-05T00_25_53.284+02_00.csv`
+- `configs/inaction_sweep.yaml` --- Inaction penalty sweep configuration
+- `configs/vol_scaled_sweep.yaml` --- Vol-scaled reward sweep configuration
+- `configs/multi_ticker_sweep.yaml` --- Multi-ticker training sweep configuration
+- `slurm/launch-inaction-sweep.sh` --- Launch script (4 agents)
+- `slurm/launch-vol-scaled-sweep.sh` --- Launch script (4 agents)
+- `slurm/launch-multi-ticker-sweep.sh` --- Launch script (4 agents)
