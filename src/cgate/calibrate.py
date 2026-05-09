@@ -35,7 +35,7 @@ logger = logging.getLogger(__name__)
 
 def collect_val_deltas(
     frozen_dir: str | Path = "experiments/executor/frozen",
-    signals_path: str | Path = "data/processed/precomputed_signals.json",
+    signals_path: str | Path = "data/processed/precomputed_signals_gpt5.json",
     temperature: float = 1.0,
     seeds: Sequence[int] | None = None,
 ) -> np.ndarray:
@@ -109,7 +109,7 @@ def calibrate_thresholds(
     low_percentile: float = 20.0,
     high_percentile: float = 80.0,
     frozen_dir: str | Path = "experiments/executor/frozen",
-    signals_path: str | Path = "data/processed/precomputed_signals.json",
+    signals_path: str | Path = "data/processed/precomputed_signals_gpt5.json",
     seeds: Sequence[int] | None = None,
 ) -> dict:
     """Calibrate C-Gate thresholds from the empirical validation-set Δ distribution.

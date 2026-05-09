@@ -31,9 +31,7 @@ logger = logging.getLogger(__name__)
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(
-        description="Calibrate C-Gate thresholds and run integration"
-    )
+    parser = argparse.ArgumentParser(description="Calibrate C-Gate thresholds and run integration")
     parser.add_argument(
         "--temperature",
         type=float,
@@ -54,7 +52,7 @@ def main() -> None:
     )
     parser.add_argument(
         "--signals-path",
-        default="data/processed/precomputed_signals.json",
+        default="data/processed/precomputed_signals_gpt5.json",
         help="Path to precomputed Analyst signals JSON",
     )
     parser.add_argument(
@@ -124,14 +122,10 @@ def main() -> None:
         if selection_path.exists():
             with open(selection_path) as f:
                 selection = json.load(f)
-            seeds = sorted(
-                entry["seed"] for entry in selection.get("selected", [])
-            )
+            seeds = sorted(entry["seed"] for entry in selection.get("selected", []))
             logger.info(f"Using {len(seeds)} seeds from selection.json: {seeds}")
         else:
-            seeds = sorted(
-                int(d.name.split("_")[1]) for d in frozen_dir.glob("seed_*")
-            )
+            seeds = sorted(int(d.name.split("_")[1]) for d in frozen_dir.glob("seed_*"))
 
     splits = ["val", "test"] if args.split == "both" else [args.split]
 
