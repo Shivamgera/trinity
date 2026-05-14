@@ -134,7 +134,7 @@ def _adv_paths(attack: str, config: str, intensity: int) -> list[Path]:
     elif attack == "perturb":
         directory, tag = PERTURB_DIR, f"sigma{intensity}"
     elif attack == "flip":
-        directory, tag = FLIP_DIR, f"rate{intensity}"
+        directory, tag = FLIP_DIR, f"flip{intensity}"
     else:
         raise ValueError(attack)
 
@@ -294,6 +294,11 @@ def _adv_line_chart(
     series = {c: v for c, v in series.items() if any(x is not None for x in v)}
     if not series:
         print(f"  Skipping {filename}: no adversarial data found for {attack}")
+        # Diagnostic: show the paths that were checked so the user can
+        # verify the directory layout and filename pattern on disk.
+        sample_paths = _adv_paths(attack, configs[0], RATES_INT[0])
+        for p in sample_paths:
+            print(f"    expected: {p} (exists: {p.exists()})")
         return
 
     fig, ax = plt.subplots(figsize=(8, 5))
