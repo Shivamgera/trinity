@@ -15,6 +15,7 @@ import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import numpy as np
+import pandas as pd
 
 BASELINES_DIR = Path("experiments/baselines")
 CGATE_DIR = Path("experiments/cgate")
@@ -280,6 +281,60 @@ def generate_executor_perturb_maxdd(output_dir: Path) -> None:
 
 
 # ------------------------------------------------------------------
+# Figure 5: AAPL Close Price
+# ------------------------------------------------------------------
+
+def generate_aapl_close(output_dir: Path) -> None:
+    """AAPL closing price with train/val/test split markers."""
+    raw = pd.read_parquet(Path("data/raw/aapl_ohlcv.parquet"))
+    raw.index = pd.to_datetime(raw.index)
+
+    fig, ax = plt.subplots(figsize=(10, 4))
+    ax.plot(raw.index, raw["Close"], linewidth=0.7, color="#1976D2")
+    ax.axvline(pd.Timestamp("2010-01-04"), color="green", linestyle="--", linewidth=1.2, label="Train start")
+    ax.axvline(pd.Timestamp("2024-01-02"), color="orange", linestyle="--", linewidth=1.2, label="Val start")
+    ax.axvline(pd.Timestamp("2024-07-01"), color="red", linestyle="--", linewidth=1.2, label="Test start")
+    ax.set_ylabel(r"Price (\$)", fontsize=11)
+    ax.set_title("AAPL Daily Close Price (2009\u20132024)", fontsize=13, fontweight="bold")
+    ax.legend(fontsize=9)
+    ax.spines["top"].set_visible(False)
+    ax.spines["right"].set_visible(False)
+
+    plt.tight_layout()
+    out = output_dir / "aapl_close.pdf"
+    fig.savefig(out, dpi=300, bbox_inches="tight")
+    plt.close(fig)
+    print(f"Saved {out}")
+
+
+# ------------------------------------------------------------------
+# Figure 6: AAPL Volume
+# ------------------------------------------------------------------
+
+def generate_aapl_volume(output_dir: Path) -> None:
+    """AAPL trading volume with train/val/test split markers."""
+    raw = pd.read_parquet(Path("data/raw/aapl_ohlcv.parquet"))
+    raw.index = pd.to_datetime(raw.index)
+
+    fig, ax = plt.subplots(figsize=(10, 4))
+    ax.bar(raw.index, raw["Volume"], width=1, alpha=0.6, color="#1976D2")
+    ax.axvline(pd.Timestamp("2010-01-04"), color="green", linestyle="--", linewidth=1.2, label="Train start")
+    ax.axvline(pd.Timestamp("2024-01-02"), color="orange", linestyle="--", linewidth=1.2, label="Val start")
+    ax.axvline(pd.Timestamp("2024-07-01"), color="red", linestyle="--", linewidth=1.2, label="Test start")
+    ax.set_ylabel("Volume", fontsize=11)
+    ax.set_title("AAPL Daily Trading Volume (2009\u20132024)", fontsize=13, fontweight="bold")
+    ax.legend(fontsize=9)
+    ax.spines["top"].set_visible(False)
+    ax.spines["right"].set_visible(False)
+
+    plt.tight_layout()
+    out = output_dir / "aapl_volume.pdf"
+    fig.savefig(out, dpi=300, bbox_inches="tight")
+    plt.close(fig)
+    print(f"Saved {out}")
+
+
+# ------------------------------------------------------------------
 # Main
 # ------------------------------------------------------------------
 
@@ -297,20 +352,28 @@ def main():
     print("Generating thesis figures...")
     print()
 
-    print("[1/4] Clean MaxDD bar chart")
+    print("[1/6] Clean MaxDD bar chart")
     generate_clean_maxdd_bar(output_dir)
     print()
 
-    print("[2/4] Delta histogram")
+    print("[2/6] Delta histogram")
     generate_delta_histogram(output_dir)
     print()
 
-    print("[3/4] Analyst poisoning MaxDD")
+    print("[3/6] Analyst poisoning MaxDD")
     generate_analyst_poison_maxdd(output_dir)
     print()
 
-    print("[4/4] Executor perturbation MaxDD")
+    print("[4/6] Executor perturbation MaxDD")
     generate_executor_perturb_maxdd(output_dir)
+    print()
+
+    print("[5/6] AAPL close price")
+    generate_aapl_close(output_dir)
+    print()
+
+    print("[6/6] AAPL volume")
+    generate_aapl_volume(output_dir)
     print()
 
     print(f"All figures saved to {output_dir}/")

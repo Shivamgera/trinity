@@ -70,3 +70,9 @@ htmlcov/
 # Logs
 *.log
 log/
+
+# Thesis writing artefacts (kept locally, not tracked)
+thesis_text/
+AGENTS.md
+Thesis_Instructions_*.pdf
+
