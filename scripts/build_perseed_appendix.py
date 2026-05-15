@@ -75,6 +75,9 @@ def adv_paths(attack: str, config: str, seed: int, rate: int) -> Path:
         d, tag = EXP / "adversarial" / "executor_flip", f"flip{rate}"
     else:
         raise ValueError(attack)
+    # Channel-independent configs are seed-resolved but rate-invariant.
+    if config == "Executor-Only" and attack == "poison":
+        return d / f"executor_only_seed{seed}.json"
     slug = {
         "Trinity": "trinity",
         "Trinity-no-CGate": "trinity_no_cgate",
