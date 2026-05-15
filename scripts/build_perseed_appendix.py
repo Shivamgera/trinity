@@ -38,7 +38,7 @@ def _metrics(d: dict | None) -> tuple[str, str, str]:
     """Return (Sharpe, Return%, MaxDD%) as formatted strings."""
     if d is None:
         return ("--", "--", "--")
-    m = d.get("metrics") or d
+    m = d.get("statistics") or d.get("metrics") or d
     sh = m.get("sharpe_ratio") or m.get("sharpe")
     rt = m.get("total_return") or m.get("return")
     dd = m.get("max_drawdown") or m.get("maxdd")
