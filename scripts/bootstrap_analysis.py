@@ -366,6 +366,36 @@ def main() -> int:
         summary["contrasts"]["Trinity_minus_Trinity-no-CGate"] = contrast
 
     # ------------------------------------------------------------------
+    # 3b. Paired contrast: Trinity vs Executor-Only, per seed and pooled
+    # ------------------------------------------------------------------
+    if "Trinity" in series and "Executor-Only" in series:
+        shared_seeds = sorted(
+            set(series["Trinity"].keys()) & set(series["Executor-Only"].keys())
+        )
+        contrast_ex = {"per_seed_sharpe": {}, "per_seed_maxdd": {}}
+        sharpe_diffs_ex: list[np.ndarray] = []
+        maxdd_diffs_ex: list[np.ndarray] = []
+        for s in shared_seeds:
+            ra = series["Trinity"][s]
+            rb = series["Executor-Only"][s]
+            sh_diff = paired_bootstrap_contrast(
+                ra, rb, sharpe, args.block_length, args.n_bootstrap, rng
+            )
+            md_diff = paired_bootstrap_contrast(
+                ra, rb, maxdd, args.block_length, args.n_bootstrap, rng
+            )
+            sharpe_diffs_ex.append(sh_diff)
+            maxdd_diffs_ex.append(md_diff)
+            contrast_ex["per_seed_sharpe"][str(s)] = ci_and_pvalue(sh_diff)
+            contrast_ex["per_seed_maxdd"][str(s)] = ci_and_pvalue(md_diff)
+        if sharpe_diffs_ex:
+            pooled_sh = np.mean(np.stack(sharpe_diffs_ex), axis=0)
+            pooled_md = np.mean(np.stack(maxdd_diffs_ex), axis=0)
+            contrast_ex["pooled_sharpe"] = ci_and_pvalue(pooled_sh)
+            contrast_ex["pooled_maxdd"] = ci_and_pvalue(pooled_md)
+        summary["contrasts"]["Trinity_minus_Executor-Only"] = contrast_ex
+
+    # ------------------------------------------------------------------
     # 4. Write summary
     # ------------------------------------------------------------------
     out_path = Path(args.output)
@@ -394,6 +424,23 @@ def main() -> int:
     if "Trinity_minus_Trinity-no-CGate" in summary["contrasts"]:
         c = summary["contrasts"]["Trinity_minus_Trinity-no-CGate"]
         print("\n## Paired contrast: Trinity \u2212 Trinity-no-CGate\n")
+        if "pooled_sharpe" in c:
+            ps = c["pooled_sharpe"]
+            pm = c["pooled_maxdd"]
+            print(
+                f"Pooled Sharpe diff: {ps['mean']:+.3f} "
+                f"95% CI [{ps['ci_lo']:+.3f}, {ps['ci_hi']:+.3f}], "
+                f"p = {ps['p_two_sided']:.4f}"
+            )
+            print(
+                f"Pooled MaxDD diff:  {pm['mean'] * 100:+.2f}pp "
+                f"95% CI [{pm['ci_lo'] * 100:+.2f}pp, {pm['ci_hi'] * 100:+.2f}pp], "
+                f"p = {pm['p_two_sided']:.4f}"
+            )
+
+    if "Trinity_minus_Executor-Only" in summary["contrasts"]:
+        c = summary["contrasts"]["Trinity_minus_Executor-Only"]
+        print("\n## Paired contrast: Trinity \u2212 Executor-Only\n")
         if "pooled_sharpe" in c:
             ps = c["pooled_sharpe"]
             pm = c["pooled_maxdd"]

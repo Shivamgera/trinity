@@ -247,17 +247,17 @@ def fig_delta_histogram(output_dir: Path) -> None:
         color="#2E7D32",
         linestyle="--",
         linewidth=1.5,
-        label=f"$\\tau_{{low}}$ = {tau_low:.4f}",
+        label=f"$\\tau_{{\\mathrm{{low}}}}$ = {tau_low:.4f}",
     )
     ax.axvline(
         tau_high,
         color="#C62828",
         linestyle="--",
         linewidth=1.5,
-        label=f"$\\tau_{{high}}$ = {tau_high:.4f}",
+        label=f"$\\tau_{{\\mathrm{{high}}}}$ = {tau_high:.4f}",
     )
 
-    ax.set_xlabel("$\\Delta_t = 1 - \\pi_{RL}(d_{LLM} \\mid s_t)$", fontsize=12)
+    ax.set_xlabel("$\\Delta_t = 1 - \\pi_B(d_A \\mid o^{\\mathrm{num}}_t)$", fontsize=12)
     ax.set_ylabel("Count", fontsize=12)
     ax.set_title(
         "Validation-Set Divergence Distribution ($T = 1.0$)", fontsize=13, fontweight="bold"
