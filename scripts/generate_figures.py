@@ -279,10 +279,11 @@ def fig_delta_histogram(output_dir: Path) -> None:
 
 
 def _adv_line_chart(
-    attack: str, configs: list[str], x_label: str, title: str, filename: str, output_dir: Path
+    attack: str, configs: list[str], x_label: str, title: str, filename: str, output_dir: Path,
+    x_ticks: list[str] | None = None,
 ) -> None:
     """Generic per-attack MaxDD line chart across the 10..50% grid."""
-    x_labels = [f"{r}%" for r in RATES_INT]
+    x_labels = x_ticks if x_ticks is not None else [f"{r}%" for r in RATES_INT]
     series: dict[str, list[float | None]] = {c: [] for c in configs}
 
     for c in configs:
@@ -354,6 +355,7 @@ def fig_executor_perturb_maxdd(output_dir: Path) -> None:
         title="MaxDD Under Executor Perturbation (Gaussian Noise)",
         filename="executor_perturb_maxdd.pdf",
         output_dir=output_dir,
+        x_ticks=[f"$\\sigma$={r/100:.1f}" for r in RATES_INT],
     )
 
 
