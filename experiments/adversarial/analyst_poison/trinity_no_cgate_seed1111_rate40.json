@@ -1,0 +1,945 @@
+{
+  "statistics": {
+    "config": "trinity-no-cgate",
+    "attack": "analyst-poison",
+    "corruption_rate": 0.4,
+    "split": "test",
+    "seed": 1111,
+    "n_timesteps": 116,
+    "sharpe_ratio": 2.260692651749493,
+    "sortino_ratio": 3.3319666675321455,
+    "total_return": 0.06404132815874619,
+    "max_drawdown": 0.018209486389209315,
+    "final_portfolio_value": 106404.13281587465
+  },
+  "results": [
+    {
+      "date": "2024-07-16",
+      "action": 0,
+      "position_scale": 1.0,
+      "effective_position": 0.0,
+      "step_return": -0.0,
+      "portfolio_value": 100000.0
+    },
+    {
+      "date": "2024-07-17",
+      "action": 0,
+      "position_scale": 0.5,
+      "effective_position": 0.0,
+      "step_return": -0.0,
+      "portfolio_value": 100000.0
+    },
+    {
+      "date": "2024-07-18",
+      "action": 0,
+      "position_scale": 0.5,
+      "effective_position": 0.0,
+      "step_return": 0.0,
+      "portfolio_value": 100000.0
+    },
+    {
+      "date": "2024-07-19",
+      "action": 0,
+      "position_scale": 1.0,
+      "effective_position": 0.0,
+      "step_return": -0.0,
+      "portfolio_value": 100000.0
+    },
+    {
+      "date": "2024-07-22",
+      "action": 0,
+      "position_scale": 1.0,
+      "effective_position": 0.0,
+      "step_return": 0.0,
+      "portfolio_value": 100000.0
+    },
+    {
+      "date": "2024-07-23",
+      "action": 0,
+      "position_scale": 1.0,
+      "effective_position": 0.0,
+      "step_return": -0.0,
+      "portfolio_value": 100000.0
+    },
+    {
+      "date": "2024-07-24",
+      "action": 0,
+      "position_scale": 1.0,
+      "effective_position": 0.0,
+      "step_return": -0.0,
+      "portfolio_value": 100000.0
+    },
+    {
+      "date": "2024-07-25",
+      "action": 0,
+      "position_scale": 0.5,
+      "effective_position": 0.0,
+      "step_return": 0.0,
+      "portfolio_value": 100000.0
+    },
+    {
+      "date": "2024-07-26",
+      "action": 0,
+      "position_scale": 1.0,
+      "effective_position": 0.0,
+      "step_return": 0.0,
+      "portfolio_value": 100000.0
+    },
+    {
+      "date": "2024-07-29",
+      "action": 0,
+      "position_scale": 1.0,
+      "effective_position": 0.0,
+      "step_return": 0.0,
+      "portfolio_value": 100000.0
+    },
+    {
+      "date": "2024-07-30",
+      "action": 0,
+      "position_scale": 1.0,
+      "effective_position": 0.0,
+      "step_return": 0.0,
+      "portfolio_value": 100000.0
+    },
+    {
+      "date": "2024-07-31",
+      "action": 0,
+      "position_scale": 1.0,
+      "effective_position": 0.0,
+      "step_return": -0.0,
+      "portfolio_value": 100000.0
+    },
+    {
+      "date": "2024-08-01",
+      "action": 0,
+      "position_scale": 0.5,
+      "effective_position": 0.0,
+      "step_return": 0.0,
+      "portfolio_value": 100000.0
+    },
+    {
+      "date": "2024-08-02",
+      "action": 0,
+      "position_scale": 1.0,
+      "effective_position": 0.0,
+      "step_return": -0.0,
+      "portfolio_value": 100000.0
+    },
+    {
+      "date": "2024-08-05",
+      "action": 0,
+      "position_scale": 1.0,
+      "effective_position": 0.0,
+      "step_return": -0.0,
+      "portfolio_value": 100000.0
+    },
+    {
+      "date": "2024-08-06",
+      "action": 0,
+      "position_scale": 1.0,
+      "effective_position": 0.0,
+      "step_return": 0.0,
+      "portfolio_value": 100000.0
+    },
+    {
+      "date": "2024-08-07",
+      "action": 0,
+      "position_scale": 1.0,
+      "effective_position": 0.0,
+      "step_return": 0.0,
+      "portfolio_value": 100000.0
+    },
+    {
+      "date": "2024-08-08",
+      "action": 0,
+      "position_scale": 1.0,
+      "effective_position": 0.0,
+      "step_return": 0.0,
+      "portfolio_value": 100000.0
+    },
+    {
+      "date": "2024-08-09",
+      "action": 0,
+      "position_scale": 1.0,
+      "effective_position": 0.0,
+      "step_return": 0.0,
+      "portfolio_value": 100000.0
+    },
+    {
+      "date": "2024-08-12",
+      "action": 0,
+      "position_scale": 0.5,
+      "effective_position": 0.0,
+      "step_return": 0.0,
+      "portfolio_value": 100000.0
+    },
+    {
+      "date": "2024-08-13",
+      "action": 0,
+      "position_scale": 1.0,
+      "effective_position": 0.0,
+      "step_return": 0.0,
+      "portfolio_value": 100000.0
+    },
+    {
+      "date": "2024-08-14",
+      "action": 0,
+      "position_scale": 1.0,
+      "effective_position": 0.0,
+      "step_return": 0.0,
+      "portfolio_value": 100000.0
+    },
+    {
+      "date": "2024-08-15",
+      "action": 0,
+      "position_scale": 1.0,
+      "effective_position": 0.0,
+      "step_return": 0.0,
+      "portfolio_value": 100000.0
+    },
+    {
+      "date": "2024-08-16",
+      "action": 0,
+      "position_scale": 1.0,
+      "effective_position": 0.0,
+      "step_return": -0.0,
+      "portfolio_value": 100000.0
+    },
+    {
+      "date": "2024-08-19",
+      "action": 0,
+      "position_scale": 0.5,
+      "effective_position": 0.0,
+      "step_return": 0.0,
+      "portfolio_value": 100000.0
+    },
+    {
+      "date": "2024-08-20",
+      "action": 0,
+      "position_scale": 1.0,
+      "effective_position": 0.0,
+      "step_return": -0.0,
+      "portfolio_value": 100000.0
+    },
+    {
+      "date": "2024-08-21",
+      "action": 0,
+      "position_scale": 0.5,
+      "effective_position": 0.0,
+      "step_return": -0.0,
+      "portfolio_value": 100000.0
+    },
+    {
+      "date": "2024-08-22",
+      "action": 0,
+      "position_scale": 0.5,
+      "effective_position": 0.0,
+      "step_return": 0.0,
+      "portfolio_value": 100000.0
+    },
+    {
+      "date": "2024-08-23",
+      "action": 0,
+      "position_scale": 1.0,
+      "effective_position": 0.0,
+      "step_return": 0.0,
+      "portfolio_value": 100000.0
+    },
+    {
+      "date": "2024-08-26",
+      "action": 0,
+      "position_scale": 1.0,
+      "effective_position": 0.0,
+      "step_return": 0.0,
+      "portfolio_value": 100000.0
+    },
+    {
+      "date": "2024-08-27",
+      "action": 0,
+      "position_scale": 1.0,
+      "effective_position": 0.0,
+      "step_return": -0.0,
+      "portfolio_value": 100000.0
+    },
+    {
+      "date": "2024-08-28",
+      "action": 0,
+      "position_scale": 1.0,
+      "effective_position": 0.0,
+      "step_return": 0.0,
+      "portfolio_value": 100000.0
+    },
+    {
+      "date": "2024-08-29",
+      "action": 0,
+      "position_scale": 0.5,
+      "effective_position": 0.0,
+      "step_return": -0.0,
+      "portfolio_value": 100000.0
+    },
+    {
+      "date": "2024-08-30",
+      "action": 0,
+      "position_scale": 1.0,
+      "effective_position": 0.0,
+      "step_return": -0.0,
+      "portfolio_value": 100000.0
+    },
+    {
+      "date": "2024-09-03",
+      "action": 0,
+      "position_scale": 1.0,
+      "effective_position": 0.0,
+      "step_return": -0.0,
+      "portfolio_value": 100000.0
+    },
+    {
+      "date": "2024-09-04",
+      "action": 0,
+      "position_scale": 1.0,
+      "effective_position": 0.0,
+      "step_return": 0.0,
+      "portfolio_value": 100000.0
+    },
+    {
+      "date": "2024-09-05",
+      "action": 0,
+      "position_scale": 1.0,
+      "effective_position": 0.0,
+      "step_return": -0.0,
+      "portfolio_value": 100000.0
+    },
+    {
+      "date": "2024-09-06",
+      "action": 0,
+      "position_scale": 1.0,
+      "effective_position": 0.0,
+      "step_return": 0.0,
+      "portfolio_value": 100000.0
+    },
+    {
+      "date": "2024-09-09",
+      "action": 0,
+      "position_scale": 1.0,
+      "effective_position": 0.0,
+      "step_return": -0.0,
+      "portfolio_value": 100000.0
+    },
+    {
+      "date": "2024-09-10",
+      "action": 0,
+      "position_scale": 0.5,
+      "effective_position": 0.0,
+      "step_return": 0.0,
+      "portfolio_value": 100000.0
+    },
+    {
+      "date": "2024-09-11",
+      "action": 0,
+      "position_scale": 0.5,
+      "effective_position": 0.0,
+      "step_return": 0.0,
+      "portfolio_value": 100000.0
+    },
+    {
+      "date": "2024-09-12",
+      "action": 0,
+      "position_scale": 0.5,
+      "effective_position": 0.0,
+      "step_return": -0.0,
+      "portfolio_value": 100000.0
+    },
+    {
+      "date": "2024-09-13",
+      "action": 0,
+      "position_scale": 0.5,
+      "effective_position": 0.0,
+      "step_return": -0.0,
+      "portfolio_value": 100000.0
+    },
+    {
+      "date": "2024-09-16",
+      "action": 0,
+      "position_scale": 1.0,
+      "effective_position": 0.0,
+      "step_return": 0.0,
+      "portfolio_value": 100000.0
+    },
+    {
+      "date": "2024-09-17",
+      "action": 0,
+      "position_scale": 0.5,
+      "effective_position": 0.0,
+      "step_return": 0.0,
+      "portfolio_value": 100000.0
+    },
+    {
+      "date": "2024-09-18",
+      "action": 0,
+      "position_scale": 1.0,
+      "effective_position": 0.0,
+      "step_return": 0.0,
+      "portfolio_value": 100000.0
+    },
+    {
+      "date": "2024-09-19",
+      "action": 0,
+      "position_scale": 0.5,
+      "effective_position": 0.0,
+      "step_return": -0.0,
+      "portfolio_value": 100000.0
+    },
+    {
+      "date": "2024-09-20",
+      "action": 1,
+      "position_scale": 1.0,
+      "effective_position": 1.0,
+      "step_return": -0.0,
+      "portfolio_value": 100000.0
+    },
+    {
+      "date": "2024-09-23",
+      "action": 0,
+      "position_scale": 1.0,
+      "effective_position": 0.0,
+      "step_return": 0.003973935982302977,
+      "portfolio_value": 100397.3935982303
+    },
+    {
+      "date": "2024-09-24",
+      "action": 1,
+      "position_scale": 0.5,
+      "effective_position": 0.5,
+      "step_return": -0.0,
+      "portfolio_value": 100397.3935982303
+    },
+    {
+      "date": "2024-09-25",
+      "action": 1,
+      "position_scale": 1.0,
+      "effective_position": 1.0,
+      "step_return": 0.0025401384001578985,
+      "portfolio_value": 100652.41687298493
+    },
+    {
+      "date": "2024-09-26",
+      "action": 0,
+      "position_scale": 1.0,
+      "effective_position": 0.0,
+      "step_return": 0.0011866248784971867,
+      "portfolio_value": 100771.85353492727
+    },
+    {
+      "date": "2024-09-27",
+      "action": 0,
+      "position_scale": 1.0,
+      "effective_position": 0.0,
+      "step_return": 0.0,
+      "portfolio_value": 100771.85353492727
+    },
+    {
+      "date": "2024-09-30",
+      "action": 0,
+      "position_scale": 1.0,
+      "effective_position": 0.0,
+      "step_return": -0.0,
+      "portfolio_value": 100771.85353492727
+    },
+    {
+      "date": "2024-10-01",
+      "action": 0,
+      "position_scale": 0.5,
+      "effective_position": 0.0,
+      "step_return": 0.0,
+      "portfolio_value": 100771.85353492727
+    },
+    {
+      "date": "2024-10-02",
+      "action": 0,
+      "position_scale": 0.5,
+      "effective_position": 0.0,
+      "step_return": -0.0,
+      "portfolio_value": 100771.85353492727
+    },
+    {
+      "date": "2024-10-03",
+      "action": 1,
+      "position_scale": 0.5,
+      "effective_position": 0.5,
+      "step_return": 0.0,
+      "portfolio_value": 100771.85353492727
+    },
+    {
+      "date": "2024-10-04",
+      "action": 0,
+      "position_scale": 0.5,
+      "effective_position": 0.0,
+      "step_return": -0.011265450784623965,
+      "portfolio_value": 99636.61317845422
+    },
+    {
+      "date": "2024-10-07",
+      "action": 0,
+      "position_scale": 1.0,
+      "effective_position": 0.0,
+      "step_return": 0.0,
+      "portfolio_value": 99636.61317845422
+    },
+    {
+      "date": "2024-10-08",
+      "action": 0,
+      "position_scale": 1.0,
+      "effective_position": 0.0,
+      "step_return": 0.0,
+      "portfolio_value": 99636.61317845422
+    },
+    {
+      "date": "2024-10-09",
+      "action": 0,
+      "position_scale": 0.5,
+      "effective_position": 0.0,
+      "step_return": -0.0,
+      "portfolio_value": 99636.61317845422
+    },
+    {
+      "date": "2024-10-10",
+      "action": 1,
+      "position_scale": 0.5,
+      "effective_position": 0.5,
+      "step_return": -0.0,
+      "portfolio_value": 99636.61317845422
+    },
+    {
+      "date": "2024-10-11",
+      "action": 0,
+      "position_scale": 1.0,
+      "effective_position": 0.0,
+      "step_return": 0.008239874249733183,
+      "portfolio_value": 100457.606341714
+    },
+    {
+      "date": "2024-10-14",
+      "action": 0,
+      "position_scale": 1.0,
+      "effective_position": 0.0,
+      "step_return": 0.0,
+      "portfolio_value": 100457.606341714
+    },
+    {
+      "date": "2024-10-15",
+      "action": 0,
+      "position_scale": 1.0,
+      "effective_position": 0.0,
+      "step_return": -0.0,
+      "portfolio_value": 100457.606341714
+    },
+    {
+      "date": "2024-10-16",
+      "action": 1,
+      "position_scale": 0.5,
+      "effective_position": 0.5,
+      "step_return": 0.0,
+      "portfolio_value": 100457.606341714
+    },
+    {
+      "date": "2024-10-17",
+      "action": 0,
+      "position_scale": 1.0,
+      "effective_position": 0.0,
+      "step_return": 0.006138316692020248,
+      "portfolio_value": 101074.24694356172
+    },
+    {
+      "date": "2024-10-18",
+      "action": 0,
+      "position_scale": 1.0,
+      "effective_position": 0.0,
+      "step_return": 0.0,
+      "portfolio_value": 101074.24694356172
+    },
+    {
+      "date": "2024-10-21",
+      "action": 0,
+      "position_scale": 1.0,
+      "effective_position": 0.0,
+      "step_return": -0.0,
+      "portfolio_value": 101074.24694356172
+    },
+    {
+      "date": "2024-10-22",
+      "action": 0,
+      "position_scale": 1.0,
+      "effective_position": 0.0,
+      "step_return": -0.0,
+      "portfolio_value": 101074.24694356172
+    },
+    {
+      "date": "2024-10-23",
+      "action": 0,
+      "position_scale": 1.0,
+      "effective_position": 0.0,
+      "step_return": -0.0,
+      "portfolio_value": 101074.24694356172
+    },
+    {
+      "date": "2024-10-24",
+      "action": 0,
+      "position_scale": 0.5,
+      "effective_position": 0.0,
+      "step_return": 0.0,
+      "portfolio_value": 101074.24694356172
+    },
+    {
+      "date": "2024-10-25",
+      "action": 0,
+      "position_scale": 0.5,
+      "effective_position": 0.0,
+      "step_return": 0.0,
+      "portfolio_value": 101074.24694356172
+    },
+    {
+      "date": "2024-10-28",
+      "action": 0,
+      "position_scale": 0.5,
+      "effective_position": 0.0,
+      "step_return": 0.0,
+      "portfolio_value": 101074.24694356172
+    },
+    {
+      "date": "2024-10-29",
+      "action": 1,
+      "position_scale": 1.0,
+      "effective_position": 1.0,
+      "step_return": -0.0,
+      "portfolio_value": 101074.24694356172
+    },
+    {
+      "date": "2024-10-30",
+      "action": 0,
+      "position_scale": 0.5,
+      "effective_position": 0.0,
+      "step_return": -0.01820948638920925,
+      "portfolio_value": 99233.73681954337
+    },
+    {
+      "date": "2024-10-31",
+      "action": 0,
+      "position_scale": 1.0,
+      "effective_position": 0.0,
+      "step_return": -0.0,
+      "portfolio_value": 99233.73681954337
+    },
+    {
+      "date": "2024-11-01",
+      "action": 1,
+      "position_scale": 1.0,
+      "effective_position": 1.0,
+      "step_return": -0.0,
+      "portfolio_value": 99233.73681954337
+    },
+    {
+      "date": "2024-11-04",
+      "action": 0,
+      "position_scale": 1.0,
+      "effective_position": 0.0,
+      "step_return": 0.006486057784538825,
+      "portfolio_value": 99877.37257073066
+    },
+    {
+      "date": "2024-11-05",
+      "action": 0,
+      "position_scale": 1.0,
+      "effective_position": 0.0,
+      "step_return": -0.0,
+      "portfolio_value": 99877.37257073066
+    },
+    {
+      "date": "2024-11-06",
+      "action": 0,
+      "position_scale": 0.5,
+      "effective_position": 0.0,
+      "step_return": 0.0,
+      "portfolio_value": 99877.37257073066
+    },
+    {
+      "date": "2024-11-07",
+      "action": 1,
+      "position_scale": 0.5,
+      "effective_position": 0.5,
+      "step_return": -0.0,
+      "portfolio_value": 99877.37257073066
+    },
+    {
+      "date": "2024-11-08",
+      "action": 1,
+      "position_scale": 1.0,
+      "effective_position": 1.0,
+      "step_return": -0.006014301126730858,
+      "portfolio_value": 99276.6799763436
+    },
+    {
+      "date": "2024-11-11",
+      "action": 1,
+      "position_scale": 0.5,
+      "effective_position": 0.5,
+      "step_return": 0.0,
+      "portfolio_value": 99276.6799763436
+    },
+    {
+      "date": "2024-11-12",
+      "action": 1,
+      "position_scale": 0.5,
+      "effective_position": 0.5,
+      "step_return": 0.0019845643927342434,
+      "portfolio_value": 99473.70094045353
+    },
+    {
+      "date": "2024-11-13",
+      "action": 1,
+      "position_scale": 0.5,
+      "effective_position": 0.5,
+      "step_return": 0.006885257230339607,
+      "portfolio_value": 100158.60295908242
+    },
+    {
+      "date": "2024-11-14",
+      "action": 1,
+      "position_scale": 0.5,
+      "effective_position": 0.5,
+      "step_return": -0.007054615862586785,
+      "portfolio_value": 99452.02248987275
+    },
+    {
+      "date": "2024-11-15",
+      "action": 1,
+      "position_scale": 1.0,
+      "effective_position": 1.0,
+      "step_return": 0.006711164791186273,
+      "portfolio_value": 100119.46140161903
+    },
+    {
+      "date": "2024-11-18",
+      "action": 1,
+      "position_scale": 0.5,
+      "effective_position": 0.5,
+      "step_return": 0.001140063349412461,
+      "portfolio_value": 100233.60393012594
+    },
+    {
+      "date": "2024-11-19",
+      "action": 1,
+      "position_scale": 0.5,
+      "effective_position": 0.5,
+      "step_return": 0.0015770928639269814,
+      "portfolio_value": 100391.68163160983
+    },
+    {
+      "date": "2024-11-20",
+      "action": 1,
+      "position_scale": 0.5,
+      "effective_position": 0.5,
+      "step_return": -0.001048055875946523,
+      "portfolio_value": 100286.46553977967
+    },
+    {
+      "date": "2024-11-21",
+      "action": 1,
+      "position_scale": 0.5,
+      "effective_position": 0.5,
+      "step_return": 0.002953758532858281,
+      "portfolio_value": 100582.687543098
+    },
+    {
+      "date": "2024-11-22",
+      "action": 1,
+      "position_scale": 0.5,
+      "effective_position": 0.5,
+      "step_return": 0.0065254333386304784,
+      "portfolio_value": 101239.03316568078
+    },
+    {
+      "date": "2024-11-25",
+      "action": 1,
+      "position_scale": 0.5,
+      "effective_position": 0.5,
+      "step_return": 0.004702224923712581,
+      "portfolio_value": 101715.08187068501
+    },
+    {
+      "date": "2024-11-26",
+      "action": 1,
+      "position_scale": 0.5,
+      "effective_position": 0.5,
+      "step_return": -0.0002765775887760213,
+      "portfolio_value": 101686.94975859906
+    },
+    {
+      "date": "2024-11-27",
+      "action": 1,
+      "position_scale": 0.5,
+      "effective_position": 0.5,
+      "step_return": 0.0051079419382169975,
+      "portfolio_value": 102206.36079384037
+    },
+    {
+      "date": "2024-11-29",
+      "action": 1,
+      "position_scale": 0.5,
+      "effective_position": 0.5,
+      "step_return": 0.004761248771426185,
+      "portfolio_value": 102692.99070360199
+    },
+    {
+      "date": "2024-12-02",
+      "action": 1,
+      "position_scale": 1.0,
+      "effective_position": 1.0,
+      "step_return": 0.00638592188076415,
+      "portfolio_value": 103348.78011993723
+    },
+    {
+      "date": "2024-12-03",
+      "action": 1,
+      "position_scale": 0.5,
+      "effective_position": 0.5,
+      "step_return": 0.0014836956604209735,
+      "portfolio_value": 103502.11825651098
+    },
+    {
+      "date": "2024-12-04",
+      "action": 1,
+      "position_scale": 0.5,
+      "effective_position": 0.5,
+      "step_return": 6.171328192306542e-05,
+      "portfolio_value": 103508.5057119146
+    },
+    {
+      "date": "2024-12-05",
+      "action": 1,
+      "position_scale": 1.0,
+      "effective_position": 1.0,
+      "step_return": -0.00041145527336619966,
+      "portfolio_value": 103465.91659140117
+    },
+    {
+      "date": "2024-12-06",
+      "action": 1,
+      "position_scale": 0.5,
+      "effective_position": 0.5,
+      "step_return": 0.01610110045319468,
+      "portfolio_value": 105131.83170792117
+    },
+    {
+      "date": "2024-12-09",
+      "action": 1,
+      "position_scale": 1.0,
+      "effective_position": 1.0,
+      "step_return": 0.002066883663958864,
+      "portfolio_value": 105349.12697344033
+    },
+    {
+      "date": "2024-12-10",
+      "action": 1,
+      "position_scale": 0.5,
+      "effective_position": 0.5,
+      "step_return": -0.0051659994276031275,
+      "portfolio_value": 104804.89344379706
+    },
+    {
+      "date": "2024-12-11",
+      "action": 1,
+      "position_scale": 0.5,
+      "effective_position": 0.5,
+      "step_return": 0.0029818180460164673,
+      "portfolio_value": 105117.4025663786
+    },
+    {
+      "date": "2024-12-12",
+      "action": 1,
+      "position_scale": 0.5,
+      "effective_position": 0.5,
+      "step_return": 0.00034284085069079864,
+      "portfolio_value": 105153.44110609686
+    },
+    {
+      "date": "2024-12-13",
+      "action": 1,
+      "position_scale": 0.5,
+      "effective_position": 0.5,
+      "step_return": 0.005863779980337721,
+      "portfolio_value": 105770.03774891842
+    },
+    {
+      "date": "2024-12-16",
+      "action": 1,
+      "position_scale": 0.5,
+      "effective_position": 0.5,
+      "step_return": 0.004859812558643032,
+      "portfolio_value": 106284.06030669875
+    },
+    {
+      "date": "2024-12-17",
+      "action": 1,
+      "position_scale": 1.0,
+      "effective_position": 1.0,
+      "step_return": -0.010710871828760177,
+      "portfolio_value": 105145.66535931348
+    },
+    {
+      "date": "2024-12-18",
+      "action": 1,
+      "position_scale": 0.5,
+      "effective_position": 0.5,
+      "step_return": 0.007014646628176783,
+      "portfolio_value": 105883.2250462936
+    },
+    {
+      "date": "2024-12-19",
+      "action": 1,
+      "position_scale": 0.5,
+      "effective_position": 0.5,
+      "step_return": 0.009407911421307528,
+      "portfolio_value": 106879.3650485315
+    },
+    {
+      "date": "2024-12-20",
+      "action": 1,
+      "position_scale": 0.5,
+      "effective_position": 0.5,
+      "step_return": 0.0015324660652511028,
+      "portfolio_value": 107043.15404854396
+    },
+    {
+      "date": "2024-12-23",
+      "action": 1,
+      "position_scale": 0.5,
+      "effective_position": 0.5,
+      "step_return": 0.005739134992054263,
+      "portfolio_value": 107657.48915960382
+    },
+    {
+      "date": "2024-12-24",
+      "action": 1,
+      "position_scale": 0.5,
+      "effective_position": 0.5,
+      "step_return": 0.0015878105208817109,
+      "portfolio_value": 107828.42885354316
+    },
+    {
+      "date": "2024-12-26",
+      "action": 1,
+      "position_scale": 0.5,
+      "effective_position": 0.5,
+      "step_return": -0.006621104610651198,
+      "portfolio_value": 107114.48554610169
+    },
+    {
+      "date": "2024-12-27",
+      "action": 1,
+      "position_scale": 1.0,
+      "effective_position": 1.0,
+      "step_return": -0.0066317149039688906,
+      "portfolio_value": 106404.13281587465
+    }
+  ]
+}

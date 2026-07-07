@@ -1,0 +1,1061 @@
+{
+  "statistics": {
+    "config": "trinity",
+    "attack": "executor-perturb",
+    "corruption_rate": 0.5,
+    "split": "test",
+    "seed": 1111,
+    "n_timesteps": 116,
+    "sharpe_ratio": 3.5888191801438274,
+    "sortino_ratio": 8.1091285277485,
+    "total_return": 0.08422558652625489,
+    "max_drawdown": 0.012028602253461619,
+    "final_portfolio_value": 108422.55865262546
+  },
+  "results": [
+    {
+      "date": "2024-07-16",
+      "regime": "agreement",
+      "action": 0,
+      "position_scale": 1.0,
+      "effective_position": 0.0,
+      "step_return": -0.0,
+      "portfolio_value": 100000.0
+    },
+    {
+      "date": "2024-07-17",
+      "regime": "ambiguity",
+      "action": 0,
+      "position_scale": 0.5,
+      "effective_position": 0.0,
+      "step_return": -0.0,
+      "portfolio_value": 100000.0
+    },
+    {
+      "date": "2024-07-18",
+      "regime": "conflict",
+      "action": 0,
+      "position_scale": 0.0,
+      "effective_position": 0.0,
+      "step_return": 0.0,
+      "portfolio_value": 100000.0
+    },
+    {
+      "date": "2024-07-19",
+      "regime": "agreement",
+      "action": 0,
+      "position_scale": 1.0,
+      "effective_position": 0.0,
+      "step_return": -0.0,
+      "portfolio_value": 100000.0
+    },
+    {
+      "date": "2024-07-22",
+      "regime": "agreement",
+      "action": 0,
+      "position_scale": 1.0,
+      "effective_position": 0.0,
+      "step_return": 0.0,
+      "portfolio_value": 100000.0
+    },
+    {
+      "date": "2024-07-23",
+      "regime": "agreement",
+      "action": 0,
+      "position_scale": 1.0,
+      "effective_position": 0.0,
+      "step_return": -0.0,
+      "portfolio_value": 100000.0
+    },
+    {
+      "date": "2024-07-24",
+      "regime": "agreement",
+      "action": 0,
+      "position_scale": 1.0,
+      "effective_position": 0.0,
+      "step_return": -0.0,
+      "portfolio_value": 100000.0
+    },
+    {
+      "date": "2024-07-25",
+      "regime": "conflict",
+      "action": 0,
+      "position_scale": 0.0,
+      "effective_position": 0.0,
+      "step_return": 0.0,
+      "portfolio_value": 100000.0
+    },
+    {
+      "date": "2024-07-26",
+      "regime": "agreement",
+      "action": 0,
+      "position_scale": 1.0,
+      "effective_position": 0.0,
+      "step_return": 0.0,
+      "portfolio_value": 100000.0
+    },
+    {
+      "date": "2024-07-29",
+      "regime": "agreement",
+      "action": 0,
+      "position_scale": 1.0,
+      "effective_position": 0.0,
+      "step_return": 0.0,
+      "portfolio_value": 100000.0
+    },
+    {
+      "date": "2024-07-30",
+      "regime": "agreement",
+      "action": 0,
+      "position_scale": 1.0,
+      "effective_position": 0.0,
+      "step_return": 0.0,
+      "portfolio_value": 100000.0
+    },
+    {
+      "date": "2024-07-31",
+      "regime": "agreement",
+      "action": 0,
+      "position_scale": 1.0,
+      "effective_position": 0.0,
+      "step_return": -0.0,
+      "portfolio_value": 100000.0
+    },
+    {
+      "date": "2024-08-01",
+      "regime": "conflict",
+      "action": 0,
+      "position_scale": 0.0,
+      "effective_position": 0.0,
+      "step_return": 0.0,
+      "portfolio_value": 100000.0
+    },
+    {
+      "date": "2024-08-02",
+      "regime": "agreement",
+      "action": 0,
+      "position_scale": 1.0,
+      "effective_position": 0.0,
+      "step_return": -0.0,
+      "portfolio_value": 100000.0
+    },
+    {
+      "date": "2024-08-05",
+      "regime": "agreement",
+      "action": 0,
+      "position_scale": 1.0,
+      "effective_position": 0.0,
+      "step_return": -0.0,
+      "portfolio_value": 100000.0
+    },
+    {
+      "date": "2024-08-06",
+      "regime": "agreement",
+      "action": 0,
+      "position_scale": 1.0,
+      "effective_position": 0.0,
+      "step_return": 0.0,
+      "portfolio_value": 100000.0
+    },
+    {
+      "date": "2024-08-07",
+      "regime": "agreement",
+      "action": 0,
+      "position_scale": 1.0,
+      "effective_position": 0.0,
+      "step_return": 0.0,
+      "portfolio_value": 100000.0
+    },
+    {
+      "date": "2024-08-08",
+      "regime": "agreement",
+      "action": 0,
+      "position_scale": 1.0,
+      "effective_position": 0.0,
+      "step_return": 0.0,
+      "portfolio_value": 100000.0
+    },
+    {
+      "date": "2024-08-09",
+      "regime": "agreement",
+      "action": 0,
+      "position_scale": 1.0,
+      "effective_position": 0.0,
+      "step_return": 0.0,
+      "portfolio_value": 100000.0
+    },
+    {
+      "date": "2024-08-12",
+      "regime": "conflict",
+      "action": 0,
+      "position_scale": 0.0,
+      "effective_position": 0.0,
+      "step_return": 0.0,
+      "portfolio_value": 100000.0
+    },
+    {
+      "date": "2024-08-13",
+      "regime": "agreement",
+      "action": 0,
+      "position_scale": 1.0,
+      "effective_position": 0.0,
+      "step_return": 0.0,
+      "portfolio_value": 100000.0
+    },
+    {
+      "date": "2024-08-14",
+      "regime": "agreement",
+      "action": 0,
+      "position_scale": 1.0,
+      "effective_position": 0.0,
+      "step_return": 0.0,
+      "portfolio_value": 100000.0
+    },
+    {
+      "date": "2024-08-15",
+      "regime": "agreement",
+      "action": 0,
+      "position_scale": 1.0,
+      "effective_position": 0.0,
+      "step_return": 0.0,
+      "portfolio_value": 100000.0
+    },
+    {
+      "date": "2024-08-16",
+      "regime": "agreement",
+      "action": 0,
+      "position_scale": 1.0,
+      "effective_position": 0.0,
+      "step_return": -0.0,
+      "portfolio_value": 100000.0
+    },
+    {
+      "date": "2024-08-19",
+      "regime": "conflict",
+      "action": 0,
+      "position_scale": 0.0,
+      "effective_position": 0.0,
+      "step_return": 0.0,
+      "portfolio_value": 100000.0
+    },
+    {
+      "date": "2024-08-20",
+      "regime": "agreement",
+      "action": 0,
+      "position_scale": 1.0,
+      "effective_position": 0.0,
+      "step_return": -0.0,
+      "portfolio_value": 100000.0
+    },
+    {
+      "date": "2024-08-21",
+      "regime": "conflict",
+      "action": 0,
+      "position_scale": 0.0,
+      "effective_position": 0.0,
+      "step_return": -0.0,
+      "portfolio_value": 100000.0
+    },
+    {
+      "date": "2024-08-22",
+      "regime": "ambiguity",
+      "action": 0,
+      "position_scale": 0.5,
+      "effective_position": 0.0,
+      "step_return": 0.0,
+      "portfolio_value": 100000.0
+    },
+    {
+      "date": "2024-08-23",
+      "regime": "agreement",
+      "action": 0,
+      "position_scale": 1.0,
+      "effective_position": 0.0,
+      "step_return": 0.0,
+      "portfolio_value": 100000.0
+    },
+    {
+      "date": "2024-08-26",
+      "regime": "agreement",
+      "action": 0,
+      "position_scale": 1.0,
+      "effective_position": 0.0,
+      "step_return": 0.0,
+      "portfolio_value": 100000.0
+    },
+    {
+      "date": "2024-08-27",
+      "regime": "agreement",
+      "action": 0,
+      "position_scale": 1.0,
+      "effective_position": 0.0,
+      "step_return": -0.0,
+      "portfolio_value": 100000.0
+    },
+    {
+      "date": "2024-08-28",
+      "regime": "agreement",
+      "action": 0,
+      "position_scale": 1.0,
+      "effective_position": 0.0,
+      "step_return": 0.0,
+      "portfolio_value": 100000.0
+    },
+    {
+      "date": "2024-08-29",
+      "regime": "agreement",
+      "action": 0,
+      "position_scale": 1.0,
+      "effective_position": 0.0,
+      "step_return": -0.0,
+      "portfolio_value": 100000.0
+    },
+    {
+      "date": "2024-08-30",
+      "regime": "agreement",
+      "action": 0,
+      "position_scale": 1.0,
+      "effective_position": 0.0,
+      "step_return": -0.0,
+      "portfolio_value": 100000.0
+    },
+    {
+      "date": "2024-09-03",
+      "regime": "agreement",
+      "action": 0,
+      "position_scale": 1.0,
+      "effective_position": 0.0,
+      "step_return": -0.0,
+      "portfolio_value": 100000.0
+    },
+    {
+      "date": "2024-09-04",
+      "regime": "agreement",
+      "action": 0,
+      "position_scale": 1.0,
+      "effective_position": 0.0,
+      "step_return": 0.0,
+      "portfolio_value": 100000.0
+    },
+    {
+      "date": "2024-09-05",
+      "regime": "agreement",
+      "action": 0,
+      "position_scale": 1.0,
+      "effective_position": 0.0,
+      "step_return": -0.0,
+      "portfolio_value": 100000.0
+    },
+    {
+      "date": "2024-09-06",
+      "regime": "agreement",
+      "action": 0,
+      "position_scale": 1.0,
+      "effective_position": 0.0,
+      "step_return": 0.0,
+      "portfolio_value": 100000.0
+    },
+    {
+      "date": "2024-09-09",
+      "regime": "agreement",
+      "action": 0,
+      "position_scale": 1.0,
+      "effective_position": 0.0,
+      "step_return": -0.0,
+      "portfolio_value": 100000.0
+    },
+    {
+      "date": "2024-09-10",
+      "regime": "ambiguity",
+      "action": 0,
+      "position_scale": 0.5,
+      "effective_position": 0.0,
+      "step_return": 0.0,
+      "portfolio_value": 100000.0
+    },
+    {
+      "date": "2024-09-11",
+      "regime": "ambiguity",
+      "action": 0,
+      "position_scale": 0.5,
+      "effective_position": 0.0,
+      "step_return": 0.0,
+      "portfolio_value": 100000.0
+    },
+    {
+      "date": "2024-09-12",
+      "regime": "agreement",
+      "action": 0,
+      "position_scale": 1.0,
+      "effective_position": 0.0,
+      "step_return": -0.0,
+      "portfolio_value": 100000.0
+    },
+    {
+      "date": "2024-09-13",
+      "regime": "ambiguity",
+      "action": 0,
+      "position_scale": 0.5,
+      "effective_position": 0.0,
+      "step_return": -0.0,
+      "portfolio_value": 100000.0
+    },
+    {
+      "date": "2024-09-16",
+      "regime": "agreement",
+      "action": 0,
+      "position_scale": 1.0,
+      "effective_position": 0.0,
+      "step_return": 0.0,
+      "portfolio_value": 100000.0
+    },
+    {
+      "date": "2024-09-17",
+      "regime": "agreement",
+      "action": 0,
+      "position_scale": 1.0,
+      "effective_position": 0.0,
+      "step_return": 0.0,
+      "portfolio_value": 100000.0
+    },
+    {
+      "date": "2024-09-18",
+      "regime": "agreement",
+      "action": 0,
+      "position_scale": 1.0,
+      "effective_position": 0.0,
+      "step_return": 0.0,
+      "portfolio_value": 100000.0
+    },
+    {
+      "date": "2024-09-19",
+      "regime": "conflict",
+      "action": 0,
+      "position_scale": 0.0,
+      "effective_position": 0.0,
+      "step_return": -0.0,
+      "portfolio_value": 100000.0
+    },
+    {
+      "date": "2024-09-20",
+      "regime": "conflict",
+      "action": 0,
+      "position_scale": 0.0,
+      "effective_position": 0.0,
+      "step_return": -0.0,
+      "portfolio_value": 100000.0
+    },
+    {
+      "date": "2024-09-23",
+      "regime": "agreement",
+      "action": 1,
+      "position_scale": 1.0,
+      "effective_position": 1.0,
+      "step_return": 0.0,
+      "portfolio_value": 100000.0
+    },
+    {
+      "date": "2024-09-24",
+      "regime": "agreement",
+      "action": 0,
+      "position_scale": 0.0,
+      "effective_position": 0.0,
+      "step_return": -0.00439809709413372,
+      "portfolio_value": 99560.19029058663
+    },
+    {
+      "date": "2024-09-25",
+      "regime": "conflict",
+      "action": 0,
+      "position_scale": 0.0,
+      "effective_position": 0.0,
+      "step_return": 0.0,
+      "portfolio_value": 99560.19029058663
+    },
+    {
+      "date": "2024-09-26",
+      "regime": "agreement",
+      "action": 0,
+      "position_scale": 1.0,
+      "effective_position": 0.0,
+      "step_return": 0.0,
+      "portfolio_value": 99560.19029058663
+    },
+    {
+      "date": "2024-09-27",
+      "regime": "agreement",
+      "action": 0,
+      "position_scale": 1.0,
+      "effective_position": 0.0,
+      "step_return": 0.0,
+      "portfolio_value": 99560.19029058663
+    },
+    {
+      "date": "2024-09-30",
+      "regime": "agreement",
+      "action": 0,
+      "position_scale": 1.0,
+      "effective_position": 0.0,
+      "step_return": -0.0,
+      "portfolio_value": 99560.19029058663
+    },
+    {
+      "date": "2024-10-01",
+      "regime": "conflict",
+      "action": 0,
+      "position_scale": 0.0,
+      "effective_position": 0.0,
+      "step_return": 0.0,
+      "portfolio_value": 99560.19029058663
+    },
+    {
+      "date": "2024-10-02",
+      "regime": "conflict",
+      "action": 0,
+      "position_scale": 0.0,
+      "effective_position": 0.0,
+      "step_return": -0.0,
+      "portfolio_value": 99560.19029058663
+    },
+    {
+      "date": "2024-10-03",
+      "regime": "conflict",
+      "action": 0,
+      "position_scale": 0.0,
+      "effective_position": 0.0,
+      "step_return": 0.0,
+      "portfolio_value": 99560.19029058663
+    },
+    {
+      "date": "2024-10-04",
+      "regime": "agreement",
+      "action": 0,
+      "position_scale": 1.0,
+      "effective_position": 0.0,
+      "step_return": -0.0,
+      "portfolio_value": 99560.19029058663
+    },
+    {
+      "date": "2024-10-07",
+      "regime": "agreement",
+      "action": 0,
+      "position_scale": 1.0,
+      "effective_position": 0.0,
+      "step_return": 0.0,
+      "portfolio_value": 99560.19029058663
+    },
+    {
+      "date": "2024-10-08",
+      "regime": "agreement",
+      "action": 0,
+      "position_scale": 1.0,
+      "effective_position": 0.0,
+      "step_return": 0.0,
+      "portfolio_value": 99560.19029058663
+    },
+    {
+      "date": "2024-10-09",
+      "regime": "ambiguity",
+      "action": 0,
+      "position_scale": 0.5,
+      "effective_position": 0.0,
+      "step_return": -0.0,
+      "portfolio_value": 99560.19029058663
+    },
+    {
+      "date": "2024-10-10",
+      "regime": "agreement",
+      "action": 1,
+      "position_scale": 1.0,
+      "effective_position": 1.0,
+      "step_return": -0.0,
+      "portfolio_value": 99560.19029058663
+    },
+    {
+      "date": "2024-10-11",
+      "regime": "agreement",
+      "action": 0,
+      "position_scale": 1.0,
+      "effective_position": 0.0,
+      "step_return": 0.016479748499466366,
+      "portfolio_value": 101200.9171871345
+    },
+    {
+      "date": "2024-10-14",
+      "regime": "agreement",
+      "action": 0,
+      "position_scale": 1.0,
+      "effective_position": 0.0,
+      "step_return": 0.0,
+      "portfolio_value": 101200.9171871345
+    },
+    {
+      "date": "2024-10-15",
+      "regime": "agreement",
+      "action": 0,
+      "position_scale": 1.0,
+      "effective_position": 0.0,
+      "step_return": -0.0,
+      "portfolio_value": 101200.9171871345
+    },
+    {
+      "date": "2024-10-16",
+      "regime": "ambiguity",
+      "action": 1,
+      "position_scale": 0.5,
+      "effective_position": 0.5,
+      "step_return": 0.0,
+      "portfolio_value": 101200.9171871345
+    },
+    {
+      "date": "2024-10-17",
+      "regime": "agreement",
+      "action": 1,
+      "position_scale": 1.0,
+      "effective_position": 1.0,
+      "step_return": 0.006138316692020248,
+      "portfolio_value": 101822.12046635203
+    },
+    {
+      "date": "2024-10-18",
+      "regime": "agreement",
+      "action": 0,
+      "position_scale": 1.0,
+      "effective_position": 0.0,
+      "step_return": 0.0062977873923079275,
+      "portfolio_value": 102463.3745328831
+    },
+    {
+      "date": "2024-10-21",
+      "regime": "agreement",
+      "action": 0,
+      "position_scale": 1.0,
+      "effective_position": 0.0,
+      "step_return": -0.0,
+      "portfolio_value": 102463.3745328831
+    },
+    {
+      "date": "2024-10-22",
+      "regime": "agreement",
+      "action": 0,
+      "position_scale": 1.0,
+      "effective_position": 0.0,
+      "step_return": -0.0,
+      "portfolio_value": 102463.3745328831
+    },
+    {
+      "date": "2024-10-23",
+      "regime": "agreement",
+      "action": 0,
+      "position_scale": 1.0,
+      "effective_position": 0.0,
+      "step_return": -0.0,
+      "portfolio_value": 102463.3745328831
+    },
+    {
+      "date": "2024-10-24",
+      "regime": "agreement",
+      "action": 0,
+      "position_scale": 1.0,
+      "effective_position": 0.0,
+      "step_return": 0.0,
+      "portfolio_value": 102463.3745328831
+    },
+    {
+      "date": "2024-10-25",
+      "regime": "agreement",
+      "action": 0,
+      "position_scale": 1.0,
+      "effective_position": 0.0,
+      "step_return": 0.0,
+      "portfolio_value": 102463.3745328831
+    },
+    {
+      "date": "2024-10-28",
+      "regime": "agreement",
+      "action": 0,
+      "position_scale": 1.0,
+      "effective_position": 0.0,
+      "step_return": 0.0,
+      "portfolio_value": 102463.3745328831
+    },
+    {
+      "date": "2024-10-29",
+      "regime": "conflict",
+      "action": 0,
+      "position_scale": 0.0,
+      "effective_position": 0.0,
+      "step_return": -0.0,
+      "portfolio_value": 102463.3745328831
+    },
+    {
+      "date": "2024-10-30",
+      "regime": "ambiguity",
+      "action": 0,
+      "position_scale": 0.5,
+      "effective_position": 0.0,
+      "step_return": -0.0,
+      "portfolio_value": 102463.3745328831
+    },
+    {
+      "date": "2024-10-31",
+      "regime": "agreement",
+      "action": 0,
+      "position_scale": 1.0,
+      "effective_position": 0.0,
+      "step_return": -0.0,
+      "portfolio_value": 102463.3745328831
+    },
+    {
+      "date": "2024-11-01",
+      "regime": "agreement",
+      "action": 1,
+      "position_scale": 1.0,
+      "effective_position": 1.0,
+      "step_return": -0.0,
+      "portfolio_value": 102463.3745328831
+    },
+    {
+      "date": "2024-11-04",
+      "regime": "agreement",
+      "action": 0,
+      "position_scale": 0.0,
+      "effective_position": 0.0,
+      "step_return": 0.006486057784538825,
+      "portfolio_value": 103127.95790090223
+    },
+    {
+      "date": "2024-11-05",
+      "regime": "agreement",
+      "action": 0,
+      "position_scale": 1.0,
+      "effective_position": 0.0,
+      "step_return": -0.0,
+      "portfolio_value": 103127.95790090223
+    },
+    {
+      "date": "2024-11-06",
+      "regime": "conflict",
+      "action": 0,
+      "position_scale": 0.0,
+      "effective_position": 0.0,
+      "step_return": 0.0,
+      "portfolio_value": 103127.95790090223
+    },
+    {
+      "date": "2024-11-07",
+      "regime": "agreement",
+      "action": 1,
+      "position_scale": 1.0,
+      "effective_position": 1.0,
+      "step_return": -0.0,
+      "portfolio_value": 103127.95790090223
+    },
+    {
+      "date": "2024-11-08",
+      "regime": "agreement",
+      "action": 0,
+      "position_scale": 0.0,
+      "effective_position": 0.0,
+      "step_return": -0.012028602253461716,
+      "portfolio_value": 101887.47271410053
+    },
+    {
+      "date": "2024-11-11",
+      "regime": "ambiguity",
+      "action": 1,
+      "position_scale": 0.5,
+      "effective_position": 0.5,
+      "step_return": 0.0,
+      "portfolio_value": 101887.47271410053
+    },
+    {
+      "date": "2024-11-12",
+      "regime": "ambiguity",
+      "action": 1,
+      "position_scale": 0.5,
+      "effective_position": 0.5,
+      "step_return": 0.0019845643927342434,
+      "portfolio_value": 102089.67496451462
+    },
+    {
+      "date": "2024-11-13",
+      "regime": "ambiguity",
+      "action": 1,
+      "position_scale": 0.5,
+      "effective_position": 0.5,
+      "step_return": 0.006885257230339607,
+      "portfolio_value": 102792.58863720705
+    },
+    {
+      "date": "2024-11-14",
+      "regime": "conflict",
+      "action": 0,
+      "position_scale": 0.0,
+      "effective_position": 0.0,
+      "step_return": -0.007054615862586785,
+      "portfolio_value": 102067.42641085065
+    },
+    {
+      "date": "2024-11-15",
+      "regime": "agreement",
+      "action": 1,
+      "position_scale": 1.0,
+      "effective_position": 1.0,
+      "step_return": 0.0,
+      "portfolio_value": 102067.42641085065
+    },
+    {
+      "date": "2024-11-18",
+      "regime": "conflict",
+      "action": 0,
+      "position_scale": 0.0,
+      "effective_position": 0.0,
+      "step_return": 0.001140063349412461,
+      "portfolio_value": 102183.78974287052
+    },
+    {
+      "date": "2024-11-19",
+      "regime": "agreement",
+      "action": 1,
+      "position_scale": 1.0,
+      "effective_position": 1.0,
+      "step_return": 0.0,
+      "portfolio_value": 102183.78974287052
+    },
+    {
+      "date": "2024-11-20",
+      "regime": "ambiguity",
+      "action": 0,
+      "position_scale": 0.0,
+      "effective_position": 0.0,
+      "step_return": -0.002096111751893046,
+      "portfolio_value": 101969.60110033752
+    },
+    {
+      "date": "2024-11-21",
+      "regime": "agreement",
+      "action": 1,
+      "position_scale": 1.0,
+      "effective_position": 1.0,
+      "step_return": 0.0,
+      "portfolio_value": 101969.60110033752
+    },
+    {
+      "date": "2024-11-22",
+      "regime": "ambiguity",
+      "action": 0,
+      "position_scale": 0.0,
+      "effective_position": 0.0,
+      "step_return": 0.013050866677260957,
+      "portfolio_value": 103300.39276943149
+    },
+    {
+      "date": "2024-11-25",
+      "regime": "agreement",
+      "action": 1,
+      "position_scale": 1.0,
+      "effective_position": 1.0,
+      "step_return": 0.0,
+      "portfolio_value": 103300.39276943149
+    },
+    {
+      "date": "2024-11-26",
+      "regime": "ambiguity",
+      "action": 0,
+      "position_scale": 0.0,
+      "effective_position": 0.0,
+      "step_return": -0.0005531551775520426,
+      "portfolio_value": 103243.25162232792
+    },
+    {
+      "date": "2024-11-27",
+      "regime": "agreement",
+      "action": 1,
+      "position_scale": 1.0,
+      "effective_position": 1.0,
+      "step_return": 0.0,
+      "portfolio_value": 103243.25162232792
+    },
+    {
+      "date": "2024-11-29",
+      "regime": "agreement",
+      "action": 0,
+      "position_scale": 0.0,
+      "effective_position": 0.0,
+      "step_return": 0.00952249754285237,
+      "portfolio_value": 104226.38523221762
+    },
+    {
+      "date": "2024-12-02",
+      "regime": "agreement",
+      "action": 1,
+      "position_scale": 1.0,
+      "effective_position": 1.0,
+      "step_return": 0.0,
+      "portfolio_value": 104226.38523221762
+    },
+    {
+      "date": "2024-12-03",
+      "regime": "agreement",
+      "action": 0,
+      "position_scale": 0.0,
+      "effective_position": 0.0,
+      "step_return": 0.0014836956604209735,
+      "portfolio_value": 104381.02546768803
+    },
+    {
+      "date": "2024-12-04",
+      "regime": "agreement",
+      "action": 1,
+      "position_scale": 1.0,
+      "effective_position": 1.0,
+      "step_return": 0.0,
+      "portfolio_value": 104381.02546768803
+    },
+    {
+      "date": "2024-12-05",
+      "regime": "conflict",
+      "action": 0,
+      "position_scale": 0.0,
+      "effective_position": 0.0,
+      "step_return": -0.0008229105467323993,
+      "portfolio_value": 104295.12922095192
+    },
+    {
+      "date": "2024-12-06",
+      "regime": "agreement",
+      "action": 1,
+      "position_scale": 1.0,
+      "effective_position": 1.0,
+      "step_return": 0.0,
+      "portfolio_value": 104295.12922095192
+    },
+    {
+      "date": "2024-12-09",
+      "regime": "agreement",
+      "action": 0,
+      "position_scale": 0.0,
+      "effective_position": 0.0,
+      "step_return": 0.004133767327917728,
+      "portfolio_value": 104726.26101858645
+    },
+    {
+      "date": "2024-12-10",
+      "regime": "agreement",
+      "action": 1,
+      "position_scale": 1.0,
+      "effective_position": 1.0,
+      "step_return": -0.0,
+      "portfolio_value": 104726.26101858645
+    },
+    {
+      "date": "2024-12-11",
+      "regime": "agreement",
+      "action": 0,
+      "position_scale": 0.0,
+      "effective_position": 0.0,
+      "step_return": 0.005963636092032935,
+      "portfolio_value": 105350.81032858056
+    },
+    {
+      "date": "2024-12-12",
+      "regime": "ambiguity",
+      "action": 1,
+      "position_scale": 0.5,
+      "effective_position": 0.5,
+      "step_return": 0.0,
+      "portfolio_value": 105350.81032858056
+    },
+    {
+      "date": "2024-12-13",
+      "regime": "agreement",
+      "action": 1,
+      "position_scale": 1.0,
+      "effective_position": 1.0,
+      "step_return": 0.005863779980337721,
+      "portfolio_value": 105968.56430109765
+    },
+    {
+      "date": "2024-12-16",
+      "regime": "agreement",
+      "action": 0,
+      "position_scale": 0.0,
+      "effective_position": 0.0,
+      "step_return": 0.009719625117286064,
+      "portfolio_value": 106998.53902032133
+    },
+    {
+      "date": "2024-12-17",
+      "regime": "agreement",
+      "action": 1,
+      "position_scale": 1.0,
+      "effective_position": 1.0,
+      "step_return": -0.0,
+      "portfolio_value": 106998.53902032133
+    },
+    {
+      "date": "2024-12-18",
+      "regime": "agreement",
+      "action": 0,
+      "position_scale": 0.0,
+      "effective_position": 0.0,
+      "step_return": 0.007014646628176783,
+      "portfolio_value": 107749.09596128008
+    },
+    {
+      "date": "2024-12-19",
+      "regime": "agreement",
+      "action": 1,
+      "position_scale": 1.0,
+      "effective_position": 1.0,
+      "step_return": 0.0,
+      "portfolio_value": 107749.09596128008
+    },
+    {
+      "date": "2024-12-20",
+      "regime": "conflict",
+      "action": 0,
+      "position_scale": 0.0,
+      "effective_position": 0.0,
+      "step_return": 0.0030649321305022056,
+      "portfolio_value": 108079.33962752439
+    },
+    {
+      "date": "2024-12-23",
+      "regime": "agreement",
+      "action": 1,
+      "position_scale": 1.0,
+      "effective_position": 1.0,
+      "step_return": 0.0,
+      "portfolio_value": 108079.33962752439
+    },
+    {
+      "date": "2024-12-24",
+      "regime": "agreement",
+      "action": 0,
+      "position_scale": 0.0,
+      "effective_position": 0.0,
+      "step_return": 0.0031756210417634217,
+      "portfolio_value": 108422.55865262546
+    },
+    {
+      "date": "2024-12-26",
+      "regime": "conflict",
+      "action": 0,
+      "position_scale": 0.0,
+      "effective_position": 0.0,
+      "step_return": -0.0,
+      "portfolio_value": 108422.55865262546
+    },
+    {
+      "date": "2024-12-27",
+      "regime": "conflict",
+      "action": 0,
+      "position_scale": 0.0,
+      "effective_position": 0.0,
+      "step_return": -0.0,
+      "portfolio_value": 108422.55865262546
+    }
+  ]
+}

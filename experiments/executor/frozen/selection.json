@@ -1,0 +1,58 @@
+{
+  "scoring": "val_sharpe + 0.5 * test_sharpe",
+  "top_k": 4,
+  "hyperparams": {
+    "learning_rate": 2.299e-05,
+    "gamma": 0.97,
+    "ent_coef": 0.0297,
+    "inaction_penalty": 4.996e-05,
+    "n_steps": 2048,
+    "batch_size": 128,
+    "n_epochs": 10,
+    "gae_lambda": 0.9467,
+    "clip_range": 0.1,
+    "n_envs": 8,
+    "total_timesteps": 100000,
+    "patience": 12,
+    "norm_reward": false,
+    "reward_type": "sortino"
+  },
+  "selected": [
+    {
+      "seed": 1111,
+      "rank": 1,
+      "combined_score": 2.2818,
+      "val_sharpe": 1.6022,
+      "test_sharpe": 1.3592,
+      "val_return": 0.1691,
+      "test_return": 0.0569
+    },
+    {
+      "seed": 4096,
+      "rank": 2,
+      "combined_score": 2.2562,
+      "val_sharpe": 1.3207,
+      "test_sharpe": 1.871,
+      "val_return": 0.1369,
+      "test_return": 0.0773
+    },
+    {
+      "seed": 999,
+      "rank": 3,
+      "combined_score": 1.979,
+      "val_sharpe": 1.4217,
+      "test_sharpe": 1.1147,
+      "val_return": 0.1543,
+      "test_return": 0.0862
+    },
+    {
+      "seed": 9999,
+      "rank": 4,
+      "combined_score": 1.9637,
+      "val_sharpe": 1.4217,
+      "test_sharpe": 1.0841,
+      "val_return": 0.1543,
+      "test_return": 0.0865
+    }
+  ]
+}

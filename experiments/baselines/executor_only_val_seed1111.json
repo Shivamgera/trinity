@@ -1,0 +1,1939 @@
+{
+  "statistics": {
+    "baseline": "executor-only",
+    "model_dir": "experiments/executor/frozen/seed_1111",
+    "split": "val",
+    "n_timesteps": 113,
+    "sharpe_ratio": 1.6546378505551513,
+    "sortino_ratio": 3.0160202891247723,
+    "total_return": 0.1724326683594335,
+    "max_drawdown": 0.13620375269108148,
+    "final_portfolio_value": 117243.2668359434,
+    "pct_flat": 0.1415929203539823,
+    "pct_long": 0.8584070796460177,
+    "pct_short": 0.0
+  },
+  "results": [
+    {
+      "date": "2024-01-17",
+      "action": 1,
+      "rl_argmax": 1,
+      "pi_rl": [
+        0.3269363045692444,
+        0.3914400339126587,
+        0.28162360191345215
+      ],
+      "position": 1.0,
+      "effective_position": 1.0,
+      "position_scale": 1.0,
+      "price": 186.69058227539062,
+      "step_return": 0.0,
+      "portfolio_value": 100000.0,
+      "reward": 0.031070876530643332
+    },
+    {
+      "date": "2024-01-18",
+      "action": 1,
+      "rl_argmax": 1,
+      "pi_rl": [
+        0.33630675077438354,
+        0.3760196566581726,
+        0.28767362236976624
+      ],
+      "position": 1.0,
+      "effective_position": 1.0,
+      "position_scale": 1.0,
+      "price": 189.59043884277344,
+      "step_return": 0.015532955824762398,
+      "portfolio_value": 101553.29558247623,
+      "reward": 0.015532955824762398
+    },
+    {
+      "date": "2024-01-19",
+      "action": 1,
+      "rl_argmax": 1,
+      "pi_rl": [
+        0.33729568123817444,
+        0.3895344138145447,
+        0.2731699049472809
+      ],
+      "position": 1.0,
+      "effective_position": 1.0,
+      "position_scale": 1.0,
+      "price": 191.89649963378906,
+      "step_return": 0.012163381260634307,
+      "portfolio_value": 102788.52703491978,
+      "reward": 2.693870808684096
+    },
+    {
+      "date": "2024-01-22",
+      "action": 1,
+      "rl_argmax": 1,
+      "pi_rl": [
+        0.3345017731189728,
+        0.3941836357116699,
+        0.2713145315647125
+      ],
+      "position": 1.0,
+      "effective_position": 1.0,
+      "position_scale": 1.0,
+      "price": 193.17320251464844,
+      "step_return": 0.006653080610098704,
+      "portfolio_value": 103472.38739107641,
+      "reward": 1.5369027003364986
+    },
+    {
+      "date": "2024-01-23",
+      "action": 1,
+      "rl_argmax": 1,
+      "pi_rl": [
+        0.33828994631767273,
+        0.38698381185531616,
+        0.2747262120246887
+      ],
+      "position": 1.0,
+      "effective_position": 1.0,
+      "position_scale": 1.0,
+      "price": 192.50021362304688,
+      "step_return": -0.003483862579492771,
+      "portfolio_value": 103111.90381263386,
+      "reward": -1.1591866046174668
+    },
+    {
+      "date": "2024-01-24",
+      "action": 1,
+      "rl_argmax": 1,
+      "pi_rl": [
+        0.33068859577178955,
+        0.38711267709732056,
+        0.2821987569332123
+      ],
+      "position": 1.0,
+      "effective_position": 1.0,
+      "position_scale": 1.0,
+      "price": 192.17361450195312,
+      "step_return": -0.001696616928089727,
+      "portfolio_value": 102936.96241113778,
+      "reward": -0.5808280432704772
+    },
+    {
+      "date": "2024-01-25",
+      "action": 1,
+      "rl_argmax": 1,
+      "pi_rl": [
+        0.332500159740448,
+        0.3790043890476227,
+        0.2884954810142517
+      ],
+      "position": 1.0,
+      "effective_position": 1.0,
+      "position_scale": 1.0,
+      "price": 190.4416046142578,
+      "step_return": -0.009012735136319713,
+      "portfolio_value": 102009.21883318889,
+      "reward": -3.0
+    },
+    {
+      "date": "2024-01-26",
+      "action": 1,
+      "rl_argmax": 1,
+      "pi_rl": [
+        0.33914318680763245,
+        0.36997851729393005,
+        0.2908782958984375
+      ],
+      "position": 1.0,
+      "effective_position": 1.0,
+      "position_scale": 1.0,
+      "price": 189.7587127685547,
+      "step_return": -0.0035858332904006567,
+      "portfolio_value": 101643.43078036908,
+      "reward": -1.1000788594045872
+    },
+    {
+      "date": "2024-01-29",
+      "action": 0,
+      "rl_argmax": 0,
+      "pi_rl": [
+        0.3505750894546509,
+        0.3495597243309021,
+        0.299865186214447
+      ],
+      "position": 0.0,
+      "effective_position": 0.0,
+      "position_scale": 1.0,
+      "price": 186.1066436767578,
+      "step_return": -0.01924585721790408,
+      "portfolio_value": 99687.21582443218,
+      "reward": -0.47571260974961377
+    },
+    {
+      "date": "2024-01-30",
+      "action": 1,
+      "rl_argmax": 1,
+      "pi_rl": [
+        0.34802117943763733,
+        0.3521355092525482,
+        0.29984331130981445
+      ],
+      "position": 1.0,
+      "effective_position": 1.0,
+      "position_scale": 1.0,
+      "price": 182.5040740966797,
+      "step_return": -0.0,
+      "portfolio_value": 99687.21582443218,
+      "reward": -3.0
+    },
+    {
+      "date": "2024-01-31",
+      "action": 1,
+      "rl_argmax": 1,
+      "pi_rl": [
+        0.3417903184890747,
+        0.3707817792892456,
+        0.2874278724193573
+      ],
+      "position": 1.0,
+      "effective_position": 1.0,
+      "position_scale": 1.0,
+      "price": 184.9387664794922,
+      "step_return": 0.013340482369301774,
+      "portfolio_value": 101017.09136958279,
+      "reward": 2.8701567343936936
+    },
+    {
+      "date": "2024-02-01",
+      "action": 1,
+      "rl_argmax": 1,
+      "pi_rl": [
+        0.3472500443458557,
+        0.3686841130256653,
+        0.2840658724308014
+      ],
+      "position": 1.0,
+      "effective_position": 1.0,
+      "position_scale": 1.0,
+      "price": 183.93917846679688,
+      "step_return": -0.005404967448002075,
+      "portfolio_value": 100471.09727903834,
+      "reward": -1.31797369962345
+    },
+    {
+      "date": "2024-02-02",
+      "action": 1,
+      "rl_argmax": 1,
+      "pi_rl": [
+        0.3435593545436859,
+        0.3564615845680237,
+        0.2999791204929352
+      ],
+      "position": 1.0,
+      "effective_position": 1.0,
+      "position_scale": 1.0,
+      "price": 185.75033569335938,
+      "step_return": 0.00984650057513133,
+      "portfolio_value": 101460.38599618047,
+      "reward": 2.031373590566844
+    },
+    {
+      "date": "2024-02-05",
+      "action": 1,
+      "rl_argmax": 1,
+      "pi_rl": [
+        0.3381788730621338,
+        0.381160169839859,
+        0.2806609570980072
+      ],
+      "position": 1.0,
+      "effective_position": 1.0,
+      "position_scale": 1.0,
+      "price": 187.3536834716797,
+      "step_return": 0.008631735562336497,
+      "portfolio_value": 102336.16521815208,
+      "reward": 1.7231578863754182
+    },
+    {
+      "date": "2024-02-06",
+      "action": 1,
+      "rl_argmax": 1,
+      "pi_rl": [
+        0.34396594762802124,
+        0.3738647997379303,
+        0.28216928243637085
+      ],
+      "position": 1.0,
+      "effective_position": 1.0,
+      "position_scale": 1.0,
+      "price": 187.46253967285156,
+      "step_return": 0.0005810198078562446,
+      "portfolio_value": 102395.62455720386,
+      "reward": 0.07647983472183052
+    },
+    {
+      "date": "2024-02-07",
+      "action": 0,
+      "rl_argmax": 0,
+      "pi_rl": [
+        0.35053518414497375,
+        0.3465479612350464,
+        0.30291682481765747
+      ],
+      "position": 0.0,
+      "effective_position": 0.0,
+      "position_scale": 1.0,
+      "price": 186.38375854492188,
+      "step_return": -0.005754649061152761,
+      "portfolio_value": 101806.3736724796,
+      "reward": -0.38832141289686
+    },
+    {
+      "date": "2024-02-08",
+      "action": 1,
+      "rl_argmax": 1,
+      "pi_rl": [
+        0.33994215726852417,
+        0.371132493019104,
+        0.2889253497123718
+      ],
+      "position": 1.0,
+      "effective_position": 1.0,
+      "position_scale": 1.0,
+      "price": 187.14682006835938,
+      "step_return": 0.0,
+      "portfolio_value": 101806.3736724796,
+      "reward": 0.5110566312680516
+    },
+    {
+      "date": "2024-02-09",
+      "action": 1,
+      "rl_argmax": 1,
+      "pi_rl": [
+        0.3423841893672943,
+        0.3781161308288574,
+        0.27949967980384827
+      ],
+      "position": 1.0,
+      "effective_position": 1.0,
+      "position_scale": 1.0,
+      "price": 185.46212768554688,
+      "step_return": -0.009001982412509761,
+      "portfolio_value": 100889.91448719855,
+      "reward": -2.2616764277220036
+    },
+    {
+      "date": "2024-02-12",
+      "action": 0,
+      "rl_argmax": 0,
+      "pi_rl": [
+        0.3556060194969177,
+        0.34128355979919434,
+        0.30311036109924316
+      ],
+      "position": 0.0,
+      "effective_position": 0.0,
+      "position_scale": 1.0,
+      "price": 183.3711700439453,
+      "step_return": -0.01127431065142747,
+      "portfolio_value": 99752.45024967392,
+      "reward": -0.37237787604304146
+    },
+    {
+      "date": "2024-02-13",
+      "action": 1,
+      "rl_argmax": 1,
+      "pi_rl": [
+        0.34346261620521545,
+        0.35199421644210815,
+        0.3045431971549988
+      ],
+      "position": 1.0,
+      "effective_position": 1.0,
+      "position_scale": 1.0,
+      "price": 182.48919677734375,
+      "step_return": -0.0,
+      "portfolio_value": 99752.45024967392,
+      "reward": -1.4948025913789391
+    },
+    {
+      "date": "2024-02-14",
+      "action": 1,
+      "rl_argmax": 1,
+      "pi_rl": [
+        0.3452754318714142,
+        0.35545286536216736,
+        0.29927167296409607
+      ],
+      "position": 1.0,
+      "effective_position": 1.0,
+      "position_scale": 1.0,
+      "price": 182.20181274414062,
+      "step_return": -0.0015748002527172286,
+      "portfolio_value": 99595.36006581156,
+      "reward": -0.3773124421523299
+    },
+    {
+      "date": "2024-02-15",
+      "action": 1,
+      "rl_argmax": 1,
+      "pi_rl": [
+        0.341600239276886,
+        0.36125999689102173,
+        0.29713982343673706
+      ],
+      "position": 1.0,
+      "effective_position": 1.0,
+      "position_scale": 1.0,
+      "price": 180.66578674316406,
+      "step_return": -0.008430355208010734,
+      "portfolio_value": 98755.73580338704,
+      "reward": -1.9687059004830643
+    },
+    {
+      "date": "2024-02-16",
+      "action": 1,
+      "rl_argmax": 1,
+      "pi_rl": [
+        0.33873891830444336,
+        0.3743194341659546,
+        0.28694161772727966
+      ],
+      "position": 1.0,
+      "effective_position": 1.0,
+      "position_scale": 1.0,
+      "price": 179.9225616455078,
+      "step_return": -0.004113812089462322,
+      "portfolio_value": 98349.47326353531,
+      "reward": -0.9203360347492128
+    },
+    {
+      "date": "2024-02-20",
+      "action": 1,
+      "rl_argmax": 1,
+      "pi_rl": [
+        0.33414068818092346,
+        0.3862399160861969,
+        0.279619425535202
+      ],
+      "position": 1.0,
+      "effective_position": 1.0,
+      "position_scale": 1.0,
+      "price": 180.6757049560547,
+      "step_return": 0.004185930345026738,
+      "portfolio_value": 98761.15730808653,
+      "reward": 0.8756889013711356
+    },
+    {
+      "date": "2024-02-21",
+      "action": 1,
+      "rl_argmax": 1,
+      "pi_rl": [
+        0.3398236036300659,
+        0.3729580044746399,
+        0.2872183918952942
+      ],
+      "position": 1.0,
+      "effective_position": 1.0,
+      "position_scale": 1.0,
+      "price": 182.70721435546875,
+      "step_return": 0.011243954464758732,
+      "portfolio_value": 99871.62326374553,
+      "reward": 2.2974238646961576
+    },
+    {
+      "date": "2024-02-22",
+      "action": 1,
+      "rl_argmax": 1,
+      "pi_rl": [
+        0.33358728885650635,
+        0.39343327283859253,
+        0.2729794681072235
+      ],
+      "position": 1.0,
+      "effective_position": 1.0,
+      "position_scale": 1.0,
+      "price": 180.87387084960938,
+      "step_return": -0.010034324656127077,
+      "portfolio_value": 98869.4789719827,
+      "reward": -2.287033181968511
+    },
+    {
+      "date": "2024-02-23",
+      "action": 1,
+      "rl_argmax": 1,
+      "pi_rl": [
+        0.3315933644771576,
+        0.39328819513320923,
+        0.2751184105873108
+      ],
+      "position": 1.0,
+      "effective_position": 1.0,
+      "position_scale": 1.0,
+      "price": 179.5261688232422,
+      "step_return": -0.007451059791205315,
+      "portfolio_value": 98132.79657263713,
+      "reward": -1.608058138007676
+    },
+    {
+      "date": "2024-02-26",
+      "action": 1,
+      "rl_argmax": 1,
+      "pi_rl": [
+        0.3291909694671631,
+        0.40057218074798584,
+        0.2702368199825287
+      ],
+      "position": 1.0,
+      "effective_position": 1.0,
+      "position_scale": 1.0,
+      "price": 180.98291015625,
+      "step_return": 0.008114367629836128,
+      "portfolio_value": 98929.08216057143,
+      "reward": 1.6266225635334295
+    },
+    {
+      "date": "2024-02-27",
+      "action": 1,
+      "rl_argmax": 1,
+      "pi_rl": [
+        0.33251655101776123,
+        0.3866702616214752,
+        0.28081315755844116
+      ],
+      "position": 1.0,
+      "effective_position": 1.0,
+      "position_scale": 1.0,
+      "price": 179.78382873535156,
+      "step_return": -0.006625384793863803,
+      "portfolio_value": 98273.63892395388,
+      "reward": -1.4054155452414803
+    },
+    {
+      "date": "2024-02-28",
+      "action": 1,
+      "rl_argmax": 1,
+      "pi_rl": [
+        0.3302414119243622,
+        0.39911481738090515,
+        0.2706437408924103
+      ],
+      "position": 1.0,
+      "effective_position": 1.0,
+      "position_scale": 1.0,
+      "price": 179.11985778808594,
+      "step_return": -0.003693162794096541,
+      "portfolio_value": 97910.69837703946,
+      "reward": -0.7682184084319965
+    },
+    {
+      "date": "2024-02-29",
+      "action": 1,
+      "rl_argmax": 1,
+      "pi_rl": [
+        0.32622531056404114,
+        0.40808358788490295,
+        0.2656910717487335
+      ],
+      "position": 1.0,
+      "effective_position": 1.0,
+      "position_scale": 1.0,
+      "price": 178.03970336914062,
+      "step_return": -0.00603034433079568,
+      "portfolio_value": 97320.26315215723,
+      "reward": -1.2463037586299366
+    },
+    {
+      "date": "2024-03-01",
+      "action": 1,
+      "rl_argmax": 1,
+      "pi_rl": [
+        0.33557793498039246,
+        0.3849010169506073,
+        0.27952104806900024
+      ],
+      "position": 1.0,
+      "effective_position": 1.0,
+      "position_scale": 1.0,
+      "price": 173.52084350585938,
+      "step_return": -0.02538119182277012,
+      "portfolio_value": 94850.15888484986,
+      "reward": -3.0
+    },
+    {
+      "date": "2024-03-04",
+      "action": 1,
+      "rl_argmax": 1,
+      "pi_rl": [
+        0.3330579698085785,
+        0.39832615852355957,
+        0.26861584186553955
+      ],
+      "position": 1.0,
+      "effective_position": 1.0,
+      "position_scale": 1.0,
+      "price": 168.585693359375,
+      "step_return": -0.028441252628637247,
+      "portfolio_value": 92152.50155413947,
+      "reward": -3.0
+    },
+    {
+      "date": "2024-03-05",
+      "action": 1,
+      "rl_argmax": 1,
+      "pi_rl": [
+        0.32894620299339294,
+        0.39977988600730896,
+        0.2712738811969757
+      ],
+      "position": 1.0,
+      "effective_position": 1.0,
+      "position_scale": 1.0,
+      "price": 167.59474182128906,
+      "step_return": -0.005878028665063061,
+      "portfolio_value": 91610.82650844697,
+      "reward": -0.8793237154456917
+    },
+    {
+      "date": "2024-03-06",
+      "action": 1,
+      "rl_argmax": 1,
+      "pi_rl": [
+        0.3267947733402252,
+        0.40704602003097534,
+        0.26615914702415466
+      ],
+      "position": 1.0,
+      "effective_position": 1.0,
+      "position_scale": 1.0,
+      "price": 167.47581481933594,
+      "step_return": -0.0007096105800260737,
+      "portfolio_value": 91545.81849671165,
+      "reward": -0.06884121857208718
+    },
+    {
+      "date": "2024-03-07",
+      "action": 1,
+      "rl_argmax": 1,
+      "pi_rl": [
+        0.3303980827331543,
+        0.3897631764411926,
+        0.2798386812210083
+      ],
+      "position": 1.0,
+      "effective_position": 1.0,
+      "position_scale": 1.0,
+      "price": 169.1902313232422,
+      "step_return": 0.010236800494182829,
+      "portfolio_value": 92482.95477673916,
+      "reward": 1.8617033959318272
+    },
+    {
+      "date": "2024-03-08",
+      "action": 1,
+      "rl_argmax": 1,
+      "pi_rl": [
+        0.33299607038497925,
+        0.3967277407646179,
+        0.2702762186527252
+      ],
+      "position": 1.0,
+      "effective_position": 1.0,
+      "position_scale": 1.0,
+      "price": 171.19200134277344,
+      "step_return": 0.011831475161865687,
+      "portfolio_value": 93577.1645590761,
+      "reward": 2.0954518012998866
+    },
+    {
+      "date": "2024-03-11",
+      "action": 1,
+      "rl_argmax": 1,
+      "pi_rl": [
+        0.3306790292263031,
+        0.4051704406738281,
+        0.2641505002975464
+      ],
+      "position": 1.0,
+      "effective_position": 1.0,
+      "position_scale": 1.0,
+      "price": 171.66766357421875,
+      "step_return": 0.002778530700700823,
+      "portfolio_value": 93837.17158368803,
+      "reward": 0.47609468931364096
+    },
+    {
+      "date": "2024-03-12",
+      "action": 1,
+      "rl_argmax": 1,
+      "pi_rl": [
+        0.3363402485847473,
+        0.39651426672935486,
+        0.2671455442905426
+      ],
+      "position": 1.0,
+      "effective_position": 1.0,
+      "position_scale": 1.0,
+      "price": 169.5866241455078,
+      "step_return": -0.012122489380833342,
+      "portfolio_value": 92699.63146763733,
+      "reward": -1.8239553720327757
+    },
+    {
+      "date": "2024-03-13",
+      "action": 1,
+      "rl_argmax": 1,
+      "pi_rl": [
+        0.33031168580055237,
+        0.40056315064430237,
+        0.2691251337528229
+      ],
+      "position": 1.0,
+      "effective_position": 1.0,
+      "position_scale": 1.0,
+      "price": 171.43975830078125,
+      "step_return": 0.010927360365894312,
+      "portfolio_value": 93712.5937464698,
+      "reward": 1.8664553558279668
+    },
+    {
+      "date": "2024-03-14",
+      "action": 1,
+      "rl_argmax": 1,
+      "pi_rl": [
+        0.3191068470478058,
+        0.41752779483795166,
+        0.2633652985095978
+      ],
+      "position": 1.0,
+      "effective_position": 1.0,
+      "position_scale": 1.0,
+      "price": 171.0631866455078,
+      "step_return": -0.0021965246510250213,
+      "portfolio_value": 93506.7517241942,
+      "reward": -0.3162266523265003
+    },
+    {
+      "date": "2024-03-15",
+      "action": 1,
+      "rl_argmax": 1,
+      "pi_rl": [
+        0.33018848299980164,
+        0.39312949776649475,
+        0.2766820788383484
+      ],
+      "position": 1.0,
+      "effective_position": 1.0,
+      "position_scale": 1.0,
+      "price": 172.15325927734375,
+      "step_return": 0.006372339094178585,
+      "portfolio_value": 94102.60845377593,
+      "reward": 1.054350297002584
+    },
+    {
+      "date": "2024-03-18",
+      "action": 1,
+      "rl_argmax": 1,
+      "pi_rl": [
+        0.3280414342880249,
+        0.4031618535518646,
+        0.2687967121601105
+      ],
+      "position": 1.0,
+      "effective_position": 1.0,
+      "position_scale": 1.0,
+      "price": 174.49195861816406,
+      "step_return": 0.013584984394937315,
+      "portfolio_value": 95380.99092114338,
+      "reward": 2.2486230601430957
+    },
+    {
+      "date": "2024-03-19",
+      "action": 1,
+      "rl_argmax": 1,
+      "pi_rl": [
+        0.3302123248577118,
+        0.3901040852069855,
+        0.2796836197376251
+      ],
+      "position": 1.0,
+      "effective_position": 1.0,
+      "position_scale": 1.0,
+      "price": 177.05859375,
+      "step_return": 0.014709188619129631,
+      "portfolio_value": 96783.96790728199,
+      "reward": 2.3255966660931193
+    },
+    {
+      "date": "2024-03-20",
+      "action": 1,
+      "rl_argmax": 1,
+      "pi_rl": [
+        0.3318586051464081,
+        0.3891960084438324,
+        0.27894529700279236
+      ],
+      "position": 1.0,
+      "effective_position": 1.0,
+      "position_scale": 1.0,
+      "price": 169.8244171142578,
+      "step_return": -0.04085752903898339,
+      "portfolio_value": 92829.61412800217,
+      "reward": -3.0
+    },
+    {
+      "date": "2024-03-21",
+      "action": 1,
+      "rl_argmax": 1,
+      "pi_rl": [
+        0.3312090337276459,
+        0.3885555565357208,
+        0.2802354693412781
+      ],
+      "position": 1.0,
+      "effective_position": 1.0,
+      "position_scale": 1.0,
+      "price": 170.72625732421875,
+      "step_return": 0.0053104272358796304,
+      "portfolio_value": 93322.57903916371,
+      "reward": 0.7238470887978075
+    },
+    {
+      "date": "2024-03-22",
+      "action": 1,
+      "rl_argmax": 1,
+      "pi_rl": [
+        0.3157607913017273,
+        0.4074319005012512,
+        0.2768073081970215
+      ],
+      "position": 1.0,
+      "effective_position": 1.0,
+      "position_scale": 1.0,
+      "price": 169.3091583251953,
+      "step_return": -0.008300416240791168,
+      "portfolio_value": 92547.96278847453,
+      "reward": -1.0294359708375311
+    },
+    {
+      "date": "2024-03-25",
+      "action": 1,
+      "rl_argmax": 1,
+      "pi_rl": [
+        0.3431638181209564,
+        0.3720189034938812,
+        0.28481727838516235
+      ],
+      "position": 1.0,
+      "effective_position": 1.0,
+      "position_scale": 1.0,
+      "price": 168.17945861816406,
+      "step_return": -0.006672407554359312,
+      "portfolio_value": 91930.44506242414,
+      "reward": -0.8188325759583108
+    },
+    {
+      "date": "2024-03-26",
+      "action": 1,
+      "rl_argmax": 1,
+      "pi_rl": [
+        0.3367709815502167,
+        0.3639581799507141,
+        0.2992708086967468
+      ],
+      "position": 1.0,
+      "effective_position": 1.0,
+      "position_scale": 1.0,
+      "price": 171.7469482421875,
+      "step_return": 0.02121239807367375,
+      "portfolio_value": 93880.51025817828,
+      "reward": 3.0
+    },
+    {
+      "date": "2024-03-27",
+      "action": 1,
+      "rl_argmax": 1,
+      "pi_rl": [
+        0.33953285217285156,
+        0.37512969970703125,
+        0.2853374779224396
+      ],
+      "position": 1.0,
+      "effective_position": 1.0,
+      "position_scale": 1.0,
+      "price": 169.93345642089844,
+      "step_return": -0.01055909196553398,
+      "portfolio_value": 92889.21731659093,
+      "reward": -1.280569045216382
+    },
+    {
+      "date": "2024-03-28",
+      "action": 1,
+      "rl_argmax": 1,
+      "pi_rl": [
+        0.34603893756866455,
+        0.36634060740470886,
+        0.2876204550266266
+      ],
+      "position": 1.0,
+      "effective_position": 1.0,
+      "position_scale": 1.0,
+      "price": 168.4965362548828,
+      "step_return": -0.008455781435155416,
+      "portfolio_value": 92103.76639727918,
+      "reward": -1.0109580086352437
+    },
+    {
+      "date": "2024-04-01",
+      "action": 1,
+      "rl_argmax": 1,
+      "pi_rl": [
+        0.3390352129936218,
+        0.3659789264202118,
+        0.29498592019081116
+      ],
+      "position": 1.0,
+      "effective_position": 1.0,
+      "position_scale": 1.0,
+      "price": 167.31724548339844,
+      "step_return": -0.006998902159629413,
+      "portfolio_value": 91459.14114773126,
+      "reward": -0.8283442181002173
+    },
+    {
+      "date": "2024-04-02",
+      "action": 1,
+      "rl_argmax": 1,
+      "pi_rl": [
+        0.3157044053077698,
+        0.41571250557899475,
+        0.2685830891132355
+      ],
+      "position": 1.0,
+      "effective_position": 1.0,
+      "position_scale": 1.0,
+      "price": 168.11996459960938,
+      "step_return": 0.004797587444688031,
+      "portfolio_value": 91897.92437500357,
+      "reward": 0.645956552132753
+    },
+    {
+      "date": "2024-04-03",
+      "action": 1,
+      "rl_argmax": 1,
+      "pi_rl": [
+        0.3265191316604614,
+        0.3823307454586029,
+        0.2911500930786133
+      ],
+      "position": 1.0,
+      "effective_position": 1.0,
+      "position_scale": 1.0,
+      "price": 167.29747009277344,
+      "step_return": -0.004892307161703082,
+      "portfolio_value": 91448.3315014381,
+      "reward": -0.5766779025849285
+    },
+    {
+      "date": "2024-04-04",
+      "action": 1,
+      "rl_argmax": 1,
+      "pi_rl": [
+        0.3323915898799896,
+        0.38356274366378784,
+        0.28404563665390015
+      ],
+      "position": 1.0,
+      "effective_position": 1.0,
+      "position_scale": 1.0,
+      "price": 168.0505828857422,
+      "step_return": 0.0045016388625071105,
+      "portfolio_value": 91859.9988644364,
+      "reward": 0.6106061075497702
+    },
+    {
+      "date": "2024-04-05",
+      "action": 1,
+      "rl_argmax": 1,
+      "pi_rl": [
+        0.32203876972198486,
+        0.3958013653755188,
+        0.28215983510017395
+      ],
+      "position": 1.0,
+      "effective_position": 1.0,
+      "position_scale": 1.0,
+      "price": 166.9307861328125,
+      "step_return": -0.006663450573634956,
+      "portfolio_value": 91247.89430230907,
+      "reward": -0.7959773594902829
+    },
+    {
+      "date": "2024-04-08",
+      "action": 1,
+      "rl_argmax": 1,
+      "pi_rl": [
+        0.33068281412124634,
+        0.3797244131565094,
+        0.28959283232688904
+      ],
+      "position": 1.0,
+      "effective_position": 1.0,
+      "position_scale": 1.0,
+      "price": 168.13980102539062,
+      "step_return": 0.007242611866790202,
+      "portfolio_value": 91908.76738440258,
+      "reward": 0.9798921566403664
+    },
+    {
+      "date": "2024-04-09",
+      "action": 1,
+      "rl_argmax": 1,
+      "pi_rl": [
+        0.32097578048706055,
+        0.3961028754711151,
+        0.28292128443717957
+      ],
+      "position": 1.0,
+      "effective_position": 1.0,
+      "position_scale": 1.0,
+      "price": 166.26683044433594,
+      "step_return": -0.011139364800198925,
+      "portfolio_value": 90884.9620961711,
+      "reward": -1.332497590344366
+    },
+    {
+      "date": "2024-04-10",
+      "action": 1,
+      "rl_argmax": 1,
+      "pi_rl": [
+        0.32191652059555054,
+        0.3958520293235779,
+        0.2822314202785492
+      ],
+      "position": 1.0,
+      "effective_position": 1.0,
+      "position_scale": 1.0,
+      "price": 173.4613494873047,
+      "step_return": 0.04327092194962714,
+      "portfolio_value": 94817.63819742935,
+      "reward": 3.0
+    },
+    {
+      "date": "2024-04-11",
+      "action": 1,
+      "rl_argmax": 1,
+      "pi_rl": [
+        0.31396958231925964,
+        0.41708284616470337,
+        0.268947571516037
+      ],
+      "position": 1.0,
+      "effective_position": 1.0,
+      "position_scale": 1.0,
+      "price": 174.95774841308594,
+      "step_return": 0.008626699435949958,
+      "portfolio_value": 95635.60146338523,
+      "reward": 0.9676767897696259
+    },
+    {
+      "date": "2024-04-12",
+      "action": 1,
+      "rl_argmax": 1,
+      "pi_rl": [
+        0.3352704644203186,
+        0.37626445293426514,
+        0.28846511244773865
+      ],
+      "position": 1.0,
+      "effective_position": 1.0,
+      "position_scale": 1.0,
+      "price": 171.13255310058594,
+      "step_return": -0.021863537609483178,
+      "portfolio_value": 93544.66889398496,
+      "reward": -2.4205669154126914
+    },
+    {
+      "date": "2024-04-15",
+      "action": 1,
+      "rl_argmax": 1,
+      "pi_rl": [
+        0.32343053817749023,
+        0.4070582687854767,
+        0.2695111632347107
+      ],
+      "position": 1.0,
+      "effective_position": 1.0,
+      "position_scale": 1.0,
+      "price": 167.85240173339844,
+      "step_return": -0.019167313919868523,
+      "portfolio_value": 91751.66885976378,
+      "reward": -2.0116294012715175
+    },
+    {
+      "date": "2024-04-16",
+      "action": 1,
+      "rl_argmax": 1,
+      "pi_rl": [
+        0.3277565538883209,
+        0.39184248447418213,
+        0.28040093183517456
+      ],
+      "position": 1.0,
+      "effective_position": 1.0,
+      "position_scale": 1.0,
+      "price": 166.48484802246094,
+      "step_return": -0.008147358612774564,
+      "portfolio_value": 91004.13511024274,
+      "reward": -0.8315112127689228
+    },
+    {
+      "date": "2024-04-17",
+      "action": 1,
+      "rl_argmax": 1,
+      "pi_rl": [
+        0.3144676089286804,
+        0.4108021557331085,
+        0.27473026514053345
+      ],
+      "position": 1.0,
+      "effective_position": 1.0,
+      "position_scale": 1.0,
+      "price": 165.5334930419922,
+      "step_return": -0.005714363750029673,
+      "portfolio_value": 90484.10437946598,
+      "reward": -0.5757575768732869
+    },
+    {
+      "date": "2024-04-18",
+      "action": 1,
+      "rl_argmax": 1,
+      "pi_rl": [
+        0.3279285728931427,
+        0.3836202621459961,
+        0.2884511947631836
+      ],
+      "position": 1.0,
+      "effective_position": 1.0,
+      "position_scale": 1.0,
+      "price": 163.51190185546875,
+      "step_return": -0.01221258096698657,
+      "portfolio_value": 89379.0599285065,
+      "reward": -1.2339480521890724
+    },
+    {
+      "date": "2024-04-19",
+      "action": 1,
+      "rl_argmax": 1,
+      "pi_rl": [
+        0.33902308344841003,
+        0.37434929609298706,
+        0.2866276502609253
+      ],
+      "position": 1.0,
+      "effective_position": 1.0,
+      "position_scale": 1.0,
+      "price": 164.3443145751953,
+      "step_return": 0.005090838711315019,
+      "portfolio_value": 89834.0743067715,
+      "reward": 0.5937134279946527
+    },
+    {
+      "date": "2024-04-22",
+      "action": 1,
+      "rl_argmax": 1,
+      "pi_rl": [
+        0.348527729511261,
+        0.35416170954704285,
+        0.2973105311393738
+      ],
+      "position": 1.0,
+      "effective_position": 1.0,
+      "position_scale": 1.0,
+      "price": 165.394775390625,
+      "step_return": 0.006391829362305393,
+      "portfolio_value": 90408.27838066104,
+      "reward": 0.7369478438412851
+    },
+    {
+      "date": "2024-04-23",
+      "action": 1,
+      "rl_argmax": 1,
+      "pi_rl": [
+        0.3493119478225708,
+        0.35749295353889465,
+        0.29319503903388977
+      ],
+      "position": 1.0,
+      "effective_position": 1.0,
+      "position_scale": 1.0,
+      "price": 167.4956512451172,
+      "step_return": 0.012702189954491577,
+      "portfolio_value": 91556.66150611076,
+      "reward": 1.453681387105975
+    },
+    {
+      "date": "2024-04-24",
+      "action": 1,
+      "rl_argmax": 1,
+      "pi_rl": [
+        0.32248249650001526,
+        0.3902822434902191,
+        0.287235289812088
+      ],
+      "position": 1.0,
+      "effective_position": 1.0,
+      "position_scale": 1.0,
+      "price": 168.35780334472656,
+      "step_return": 0.00514731035224121,
+      "portfolio_value": 92027.9320576978,
+      "reward": 0.5801983104310708
+    },
+    {
+      "date": "2024-04-25",
+      "action": 1,
+      "rl_argmax": 1,
+      "pi_rl": [
+        0.3281424045562744,
+        0.40163207054138184,
+        0.27022549510002136
+      ],
+      "position": 1.0,
+      "effective_position": 1.0,
+      "position_scale": 1.0,
+      "price": 167.77313232421875,
+      "step_return": -0.003472788364378039,
+      "portfolio_value": 91708.33852605007,
+      "reward": -0.35173596901311693
+    },
+    {
+      "date": "2024-04-26",
+      "action": 1,
+      "rl_argmax": 1,
+      "pi_rl": [
+        0.3248697817325592,
+        0.402158260345459,
+        0.27297189831733704
+      ],
+      "position": 1.0,
+      "effective_position": 1.0,
+      "position_scale": 1.0,
+      "price": 171.93524169921875,
+      "step_return": 0.024807961306681656,
+      "portfolio_value": 93983.43543970438,
+      "reward": 2.847782683552934
+    },
+    {
+      "date": "2024-04-29",
+      "action": 1,
+      "rl_argmax": 1,
+      "pi_rl": [
+        0.32349127531051636,
+        0.3935557007789612,
+        0.28295302391052246
+      ],
+      "position": 1.0,
+      "effective_position": 1.0,
+      "position_scale": 1.0,
+      "price": 168.79383850097656,
+      "step_return": -0.018270851090189624,
+      "portfolio_value": 92266.27808584108,
+      "reward": -1.8790011274156633
+    },
+    {
+      "date": "2024-04-30",
+      "action": 1,
+      "rl_argmax": 1,
+      "pi_rl": [
+        0.32265037298202515,
+        0.39154258370399475,
+        0.2858070731163025
+      ],
+      "position": 1.0,
+      "effective_position": 1.0,
+      "position_scale": 1.0,
+      "price": 167.77313232421875,
+      "step_return": -0.006047058268373387,
+      "portfolio_value": 91708.33852605007,
+      "reward": -0.6025850194473594
+    },
+    {
+      "date": "2024-05-01",
+      "action": 1,
+      "rl_argmax": 1,
+      "pi_rl": [
+        0.3233414888381958,
+        0.38835975527763367,
+        0.2882988154888153
+      ],
+      "position": 1.0,
+      "effective_position": 1.0,
+      "position_scale": 1.0,
+      "price": 171.469482421875,
+      "step_return": 0.02203183576803654,
+      "portfolio_value": 93728.8415790155,
+      "reward": 2.4048164479555187
+    },
+    {
+      "date": "2024-05-02",
+      "action": 1,
+      "rl_argmax": 1,
+      "pi_rl": [
+        0.3330099582672119,
+        0.37254953384399414,
+        0.29444044828414917
+      ],
+      "position": 1.0,
+      "effective_position": 1.0,
+      "position_scale": 1.0,
+      "price": 181.7261505126953,
+      "step_return": 0.059816288857659904,
+      "portfolio_value": 99335.35304119973,
+      "reward": 3.0
+    },
+    {
+      "date": "2024-05-03",
+      "action": 1,
+      "rl_argmax": 1,
+      "pi_rl": [
+        0.3337786793708801,
+        0.3652060031890869,
+        0.30101537704467773
+      ],
+      "position": 1.0,
+      "effective_position": 1.0,
+      "position_scale": 1.0,
+      "price": 180.0712127685547,
+      "step_return": -0.009106767184973809,
+      "portfolio_value": 98430.72910781634,
+      "reward": -0.826562273707216
+    },
+    {
+      "date": "2024-05-06",
+      "action": 1,
+      "rl_argmax": 1,
+      "pi_rl": [
+        0.33753976225852966,
+        0.37206313014030457,
+        0.29039716720581055
+      ],
+      "position": 1.0,
+      "effective_position": 1.0,
+      "position_scale": 1.0,
+      "price": 180.7550048828125,
+      "step_return": 0.003797342749819149,
+      "portfolio_value": 98804.50432335332,
+      "reward": 0.31422233298425156
+    },
+    {
+      "date": "2024-05-07",
+      "action": 1,
+      "rl_argmax": 1,
+      "pi_rl": [
+        0.3469957113265991,
+        0.3699304759502411,
+        0.2830738127231598
+      ],
+      "position": 1.0,
+      "effective_position": 1.0,
+      "position_scale": 1.0,
+      "price": 181.09193420410156,
+      "step_return": 0.0018640110214790527,
+      "portfolio_value": 98988.67700838383,
+      "reward": 0.1458667533920098
+    },
+    {
+      "date": "2024-05-08",
+      "action": 1,
+      "rl_argmax": 1,
+      "pi_rl": [
+        0.3483184278011322,
+        0.3557821214199066,
+        0.2958994507789612
+      ],
+      "position": 1.0,
+      "effective_position": 1.0,
+      "position_scale": 1.0,
+      "price": 182.90542602539062,
+      "step_return": 0.010014205377281727,
+      "portfolio_value": 99979.9699499712,
+      "reward": 0.8511295406186064
+    },
+    {
+      "date": "2024-05-09",
+      "action": 1,
+      "rl_argmax": 1,
+      "pi_rl": [
+        0.33415719866752625,
+        0.3692920207977295,
+        0.29655078053474426
+      ],
+      "position": 1.0,
+      "effective_position": 1.0,
+      "position_scale": 1.0,
+      "price": 181.64515686035156,
+      "step_return": -0.006890277628308928,
+      "portfolio_value": 99291.0801997459,
+      "reward": -0.6392777412255926
+    },
+    {
+      "date": "2024-05-10",
+      "action": 1,
+      "rl_argmax": 1,
+      "pi_rl": [
+        0.3347834646701813,
+        0.36853474378585815,
+        0.2966817319393158
+      ],
+      "position": 1.0,
+      "effective_position": 1.0,
+      "position_scale": 1.0,
+      "price": 184.85037231445312,
+      "step_return": 0.017645477091171365,
+      "portfolio_value": 101043.11868076818,
+      "reward": 1.4977181031612277
+    },
+    {
+      "date": "2024-05-13",
+      "action": 1,
+      "rl_argmax": 1,
+      "pi_rl": [
+        0.34859901666641235,
+        0.3638262450695038,
+        0.2875746786594391
+      ],
+      "position": 1.0,
+      "effective_position": 1.0,
+      "position_scale": 1.0,
+      "price": 185.9915313720703,
+      "step_return": 0.00617342039038978,
+      "portfolio_value": 101666.90032994062,
+      "reward": 0.5097650516389938
+    },
+    {
+      "date": "2024-05-14",
+      "action": 1,
+      "rl_argmax": 1,
+      "pi_rl": [
+        0.3408660292625427,
+        0.37245509028434753,
+        0.28667888045310974
+      ],
+      "position": 1.0,
+      "effective_position": 1.0,
+      "position_scale": 1.0,
+      "price": 188.26397705078125,
+      "step_return": 0.012218006174512215,
+      "portfolio_value": 102909.06714591535,
+      "reward": 1.018715039437267
+    },
+    {
+      "date": "2024-05-15",
+      "action": 1,
+      "rl_argmax": 1,
+      "pi_rl": [
+        0.3400084674358368,
+        0.3646286129951477,
+        0.2953629493713379
+      ],
+      "position": 1.0,
+      "effective_position": 1.0,
+      "position_scale": 1.0,
+      "price": 188.38304138183594,
+      "step_return": 0.0006324328898171091,
+      "portfolio_value": 102974.15022463883,
+      "reward": 0.02170285346649918
+    },
+    {
+      "date": "2024-05-16",
+      "action": 1,
+      "rl_argmax": 1,
+      "pi_rl": [
+        0.33649444580078125,
+        0.38767021894454956,
+        0.27583542466163635
+      ],
+      "position": 1.0,
+      "effective_position": 1.0,
+      "position_scale": 1.0,
+      "price": 188.41281127929688,
+      "step_return": 0.0001580285424981356,
+      "portfolio_value": 102990.42307951383,
+      "reward": -0.020276716614354654
+    },
+    {
+      "date": "2024-05-17",
+      "action": 1,
+      "rl_argmax": 1,
+      "pi_rl": [
+        0.33875057101249695,
+        0.3947570323944092,
+        0.26649239659309387
+      ],
+      "position": 1.0,
+      "effective_position": 1.0,
+      "position_scale": 1.0,
+      "price": 189.57382202148438,
+      "step_return": 0.006162058377582703,
+      "portfolio_value": 103625.05607886174,
+      "reward": 0.5070379916923062
+    },
+    {
+      "date": "2024-05-20",
+      "action": 1,
+      "rl_argmax": 1,
+      "pi_rl": [
+        0.3422867953777313,
+        0.3662252128124237,
+        0.29148802161216736
+      ],
+      "position": 1.0,
+      "effective_position": 1.0,
+      "position_scale": 1.0,
+      "price": 190.87379455566406,
+      "step_return": 0.006857342012297256,
+      "portfolio_value": 104335.64852943798,
+      "reward": 0.5660038684123561
+    },
+    {
+      "date": "2024-05-21",
+      "action": 1,
+      "rl_argmax": 1,
+      "pi_rl": [
+        0.33952808380126953,
+        0.3639072775840759,
+        0.29656463861465454
+      ],
+      "position": 1.0,
+      "effective_position": 1.0,
+      "position_scale": 1.0,
+      "price": 189.4348907470703,
+      "step_return": -0.007538508950080761,
+      "portfolio_value": 103549.11330918633,
+      "reward": -0.7386535851106624
+    },
+    {
+      "date": "2024-05-22",
+      "action": 1,
+      "rl_argmax": 1,
+      "pi_rl": [
+        0.3417789041996002,
+        0.36576223373413086,
+        0.2924588918685913
+      ],
+      "position": 1.0,
+      "effective_position": 1.0,
+      "position_scale": 1.0,
+      "price": 185.44577026367188,
+      "step_return": -0.021058002924733817,
+      "portfolio_value": 101368.57577826788,
+      "reward": -2.0682685987315783
+    },
+    {
+      "date": "2024-05-23",
+      "action": 1,
+      "rl_argmax": 1,
+      "pi_rl": [
+        0.34243252873420715,
+        0.3609393239021301,
+        0.2966282367706299
+      ],
+      "position": 1.0,
+      "effective_position": 1.0,
+      "position_scale": 1.0,
+      "price": 188.52195739746094,
+      "step_return": 0.01658806846559647,
+      "portfolio_value": 103050.08465353781,
+      "reward": 1.3943400059114477
+    },
+    {
+      "date": "2024-05-24",
+      "action": 1,
+      "rl_argmax": 1,
+      "pi_rl": [
+        0.3431052565574646,
+        0.3596615493297577,
+        0.2972331941127777
+      ],
+      "position": 1.0,
+      "effective_position": 1.0,
+      "position_scale": 1.0,
+      "price": 188.5319061279297,
+      "step_return": 5.2772263804661684e-05,
+      "portfolio_value": 103055.52283979024,
+      "reward": -0.027982144602546655
+    },
+    {
+      "date": "2024-05-28",
+      "action": 1,
+      "rl_argmax": 1,
+      "pi_rl": [
+        0.347104012966156,
+        0.3548566997051239,
+        0.2980393171310425
+      ],
+      "position": 1.0,
+      "effective_position": 1.0,
+      "position_scale": 1.0,
+      "price": 188.82958984375,
+      "step_return": 0.0015789566972198173,
+      "portfolio_value": 103218.24304776361,
+      "reward": 0.10751067408378277
+    },
+    {
+      "date": "2024-05-29",
+      "action": 1,
+      "rl_argmax": 1,
+      "pi_rl": [
+        0.343366801738739,
+        0.35975176095962524,
+        0.29688143730163574
+      ],
+      "position": 1.0,
+      "effective_position": 1.0,
+      "position_scale": 1.0,
+      "price": 189.8218994140625,
+      "step_return": 0.005255053358605513,
+      "portfolio_value": 103760.66042256112,
+      "reward": 0.43027257679349196
+    },
+    {
+      "date": "2024-05-30",
+      "action": 1,
+      "rl_argmax": 1,
+      "pi_rl": [
+        0.3484400510787964,
+        0.35861578583717346,
+        0.29294413328170776
+      ],
+      "position": 1.0,
+      "effective_position": 1.0,
+      "position_scale": 1.0,
+      "price": 190.7745361328125,
+      "step_return": 0.0050185817426259835,
+      "portfolio_value": 104281.3917785606,
+      "reward": 0.4092126837309303
+    },
+    {
+      "date": "2024-05-31",
+      "action": 0,
+      "rl_argmax": 0,
+      "pi_rl": [
+        0.3511253297328949,
+        0.3426751494407654,
+        0.3061995208263397
+      ],
+      "position": 0.0,
+      "effective_position": 0.0,
+      "position_scale": 1.0,
+      "price": 192.54087829589844,
+      "step_return": 0.00925879417081247,
+      "portfolio_value": 105246.91172088415,
+      "reward": -0.17364606389182913
+    },
+    {
+      "date": "2024-06-03",
+      "action": 0,
+      "rl_argmax": 0,
+      "pi_rl": [
+        0.3482576608657837,
+        0.3410213589668274,
+        0.31072095036506653
+      ],
+      "position": 0.0,
+      "effective_position": 0.0,
+      "position_scale": 1.0,
+      "price": 192.8584442138672,
+      "step_return": 0.0,
+      "portfolio_value": 105246.91172088415,
+      "reward": -0.036457673490343824
+    },
+    {
+      "date": "2024-06-04",
+      "action": 1,
+      "rl_argmax": 1,
+      "pi_rl": [
+        0.3408719003200531,
+        0.3588285744190216,
+        0.30029961466789246
+      ],
+      "position": 1.0,
+      "effective_position": 1.0,
+      "position_scale": 1.0,
+      "price": 194.36676025390625,
+      "step_return": 0.0,
+      "portfolio_value": 105246.91172088415,
+      "reward": 0.5288110031956139
+    },
+    {
+      "date": "2024-06-05",
+      "action": 0,
+      "rl_argmax": 0,
+      "pi_rl": [
+        0.35181182622909546,
+        0.3418005704879761,
+        0.30638760328292847
+      ],
+      "position": 0.0,
+      "effective_position": 0.0,
+      "position_scale": 1.0,
+      "price": 192.9874267578125,
+      "step_return": -0.007096550327287915,
+      "portfolio_value": 104500.02171506526,
+      "reward": -0.17724212938516223
+    },
+    {
+      "date": "2024-06-06",
+      "action": 0,
+      "rl_argmax": 0,
+      "pi_rl": [
+        0.3471645414829254,
+        0.3362382650375366,
+        0.31659725308418274
+      ],
+      "position": 0.0,
+      "effective_position": 0.0,
+      "position_scale": 1.0,
+      "price": 195.37893676757812,
+      "step_return": 0.0,
+      "portfolio_value": 104500.02171506526,
+      "reward": -0.038065821713739706
+    },
+    {
+      "date": "2024-06-07",
+      "action": 1,
+      "rl_argmax": 1,
+      "pi_rl": [
+        0.34786006808280945,
+        0.35043641924858093,
+        0.3017035126686096
+      ],
+      "position": 1.0,
+      "effective_position": 1.0,
+      "position_scale": 1.0,
+      "price": 191.63787841796875,
+      "step_return": -0.0,
+      "portfolio_value": 104500.02171506526,
+      "reward": -2.085249607718932
+    },
+    {
+      "date": "2024-06-10",
+      "action": 1,
+      "rl_argmax": 1,
+      "pi_rl": [
+        0.34908124804496765,
+        0.3530787527561188,
+        0.2978399991989136
+      ],
+      "position": 1.0,
+      "effective_position": 1.0,
+      "position_scale": 1.0,
+      "price": 205.5601806640625,
+      "step_return": 0.07264901052457247,
+      "portfolio_value": 112091.84489246109,
+      "reward": 3.0
+    },
+    {
+      "date": "2024-06-11",
+      "action": 1,
+      "rl_argmax": 1,
+      "pi_rl": [
+        0.34738627076148987,
+        0.3649020493030548,
+        0.28771162033081055
+      ],
+      "position": 1.0,
+      "effective_position": 1.0,
+      "position_scale": 1.0,
+      "price": 211.4347381591797,
+      "step_return": 0.028578285328118607,
+      "portfolio_value": 115295.23761875306,
+      "reward": 1.912407592379543
+    },
+    {
+      "date": "2024-06-12",
+      "action": 1,
+      "rl_argmax": 1,
+      "pi_rl": [
+        0.3691326379776001,
+        0.37431615591049194,
+        0.25655117630958557
+      ],
+      "position": 1.0,
+      "effective_position": 1.0,
+      "position_scale": 1.0,
+      "price": 212.5957794189453,
+      "step_return": 0.005491251200602284,
+      "portfolio_value": 115928.35273075076,
+      "reward": 0.3473959273736647
+    },
+    {
+      "date": "2024-06-13",
+      "action": 1,
+      "rl_argmax": 1,
+      "pi_rl": [
+        0.360141783952713,
+        0.3979012370109558,
+        0.24195697903633118
+      ],
+      "position": 1.0,
+      "effective_position": 1.0,
+      "position_scale": 1.0,
+      "price": 210.85922241210938,
+      "step_return": -0.008168351279513621,
+      "portfolio_value": 114981.40922239062,
+      "reward": -0.71191294380701
+    },
+    {
+      "date": "2024-06-14",
+      "action": 0,
+      "rl_argmax": 0,
+      "pi_rl": [
+        0.38519588112831116,
+        0.37238800525665283,
+        0.24241606891155243
+      ],
+      "position": 0.0,
+      "effective_position": 0.0,
+      "position_scale": 1.0,
+      "price": 215.00714111328125,
+      "step_return": 0.019671507149282105,
+      "portfolio_value": 117243.2668359434,
+      "reward": -0.1746723408281386
+    },
+    {
+      "date": "2024-06-17",
+      "action": 0,
+      "rl_argmax": 0,
+      "pi_rl": [
+        0.3776583969593048,
+        0.37148430943489075,
+        0.25085726380348206
+      ],
+      "position": 0.0,
+      "effective_position": 0.0,
+      "position_scale": 1.0,
+      "price": 212.64541625976562,
+      "step_return": -0.0,
+      "portfolio_value": 117243.2668359434,
+      "reward": -0.058020581458796176
+    },
+    {
+      "date": "2024-06-18",
+      "action": 0,
+      "rl_argmax": 0,
+      "pi_rl": [
+        0.3924448788166046,
+        0.3506489098072052,
+        0.25690630078315735
+      ],
+      "position": 0.0,
+      "effective_position": 0.0,
+      "position_scale": 1.0,
+      "price": 208.07077026367188,
+      "step_return": -0.0,
+      "portfolio_value": 117243.2668359434,
+      "reward": -0.0577183910954761
+    },
+    {
+      "date": "2024-06-20",
+      "action": 0,
+      "rl_argmax": 0,
+      "pi_rl": [
+        0.3752615749835968,
+        0.3709014356136322,
+        0.2538369596004486
+      ],
+      "position": 0.0,
+      "effective_position": 0.0,
+      "position_scale": 1.0,
+      "price": 205.89759826660156,
+      "step_return": -0.0,
+      "portfolio_value": 117243.2668359434,
+      "reward": -0.057417889082125535
+    },
+    {
+      "date": "2024-06-21",
+      "action": 0,
+      "rl_argmax": 0,
+      "pi_rl": [
+        0.4053458571434021,
+        0.319175124168396,
+        0.2754790484905243
+      ],
+      "position": 0.0,
+      "effective_position": 0.0,
+      "position_scale": 1.0,
+      "price": 206.54258728027344,
+      "step_return": 0.0,
+      "portfolio_value": 117243.2668359434,
+      "reward": -0.057119064266089786
+    },
+    {
+      "date": "2024-06-24",
+      "action": 0,
+      "rl_argmax": 0,
+      "pi_rl": [
+        0.3827521800994873,
+        0.33341413736343384,
+        0.28383365273475647
+      ],
+      "position": 0.0,
+      "effective_position": 0.0,
+      "position_scale": 1.0,
+      "price": 207.46548461914062,
+      "step_return": 0.0,
+      "portfolio_value": 117243.2668359434,
+      "reward": -0.05682190559320618
+    },
+    {
+      "date": "2024-06-25",
+      "action": 0,
+      "rl_argmax": 0,
+      "pi_rl": [
+        0.38027721643447876,
+        0.34328338503837585,
+        0.276439368724823
+      ],
+      "position": 0.0,
+      "effective_position": 0.0,
+      "position_scale": 1.0,
+      "price": 211.6133575439453,
+      "step_return": 0.0,
+      "portfolio_value": 117243.2668359434,
+      "reward": -0.056526402106613
+    },
+    {
+      "date": "2024-06-26",
+      "action": 0,
+      "rl_argmax": 0,
+      "pi_rl": [
+        0.4049728810787201,
+        0.3451826274394989,
+        0.24984455108642578
+      ],
+      "position": 0.0,
+      "effective_position": 0.0,
+      "position_scale": 1.0,
+      "price": 212.4568634033203,
+      "step_return": 0.0,
+      "portfolio_value": 117243.2668359434,
+      "reward": -0.05623254294557633
+    },
+    {
+      "date": "2024-06-27",
+      "action": 0,
+      "rl_argmax": 0,
+      "pi_rl": [
+        0.40361911058425903,
+        0.32820433378219604,
+        0.2681766152381897
+      ],
+      "position": 0.0,
+      "effective_position": 0.0,
+      "position_scale": 1.0,
+      "price": 209.00355529785156,
+      "step_return": -0.0,
+      "portfolio_value": 117243.2668359434,
+      "reward": -0.055940317344334606
+    }
+  ]
+}

@@ -45,6 +45,9 @@ wandb/
 # ABIDES (installed as local editable, tracked separately)
 abides/
 
+# Thesis (private, tracked in separate repo)
+thesis_text/
+
 # SLURM
 slurm/.env
 slurm/logs/
@@ -75,4 +78,32 @@ log/
 thesis_text/
 AGENTS.md
 Thesis_Instructions_*.pdf
+
+# ---------------------------------------------------------------------------
+# Reproduction artifacts (curated v7 subset, committed for reviewers)
+# These negations must appear AFTER the broad experiments/, data/processed/,
+# *.zip and *.pkl excludes so the last-matching pattern wins. Parent dirs are
+# re-included progressively because git cannot un-ignore a file whose parent
+# directory is excluded.
+# ---------------------------------------------------------------------------
+!experiments/
+experiments/*
+!experiments/executor/
+experiments/executor/*
+!experiments/executor/frozen/
+!experiments/executor/frozen/**
+!experiments/baselines/
+!experiments/baselines/**
+!experiments/cgate/
+!experiments/cgate/**
+!experiments/adversarial/
+!experiments/adversarial/**
+!experiments/bootstrap/
+!experiments/bootstrap/**
+
+!data/processed/
+data/processed/*
+!data/processed/aapl_features.parquet
+!data/processed/precomputed_signals_gpt5.json
+!data/processed/headlines.json
 

@@ -1,0 +1,18 @@
+{
+  "temperature": 1.0,
+  "low_percentile": 20.0,
+  "high_percentile": 80.0,
+  "tau_low": 0.6329,
+  "tau_high": 0.6991,
+  "n_samples": 452,
+  "delta_mean": 0.6655,
+  "delta_std": 0.0529,
+  "delta_median": 0.6659,
+  "delta_p10": 0.5966,
+  "delta_p25": 0.6475,
+  "delta_p75": 0.6922,
+  "delta_p90": 0.7283,
+  "pct_agreement": 0.2013,
+  "pct_ambiguity": 0.5973,
+  "pct_conflict": 0.2013
+}
